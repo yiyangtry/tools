@@ -5,8 +5,8 @@
       "destination": "/index.html"
     },
     {
-      "source": "/json-smart-diff",
-      "destination": "/json_smart_diff.html"
+      "source": "/tools/:tool",
+      "destination": "/tools/:tool/index.html"
     }
   ],
   "headers": [
@@ -18,7 +18,15 @@
           "value": "public, max-age=3600"
         }
       ]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
     }
   ]
 }
-

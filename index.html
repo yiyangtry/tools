@@ -3,999 +3,286 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JSON 智能对比 (Standalone)</title>
+    <title>工具集合 - 在线实用工具</title>
+    <link rel="stylesheet" href="/assets/css/common.css">
     <style>
-        :root {
-            --primary-color: #2563eb;
-            --primary-hover: #1d4ed8;
-            --bg-color: #f9fafb;
-            --card-bg: #ffffff;
-            --text-main: #111827;
-            --text-muted: #6b7280;
-            --border-color: #e5e7eb;
-            --success-bg: #dcfce7;
-            --success-text: #166534;
-            --error-bg: #fee2e2;
-            --error-text: #991b1b;
-            --added-bg: #dcfce7;
-            --added-text: #14532d;
-            --removed-bg: #fee2e2;
-            --removed-text: #7f1d1d;
-            --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-        }
-
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg-color: #030712;
-                --card-bg: #111827;
-                --text-main: #f9fafb;
-                --text-muted: #9ca3af;
-                --border-color: #1f2937;
-                --success-bg: rgba(22, 101, 52, 0.2);
-                --success-text: #4ade80;
-                --error-bg: rgba(153, 27, 27, 0.2);
-                --error-text: #f87171;
-                --added-bg: rgba(22, 101, 52, 0.3);
-                --added-text: #dcfce7;
-                --removed-bg: rgba(127, 29, 29, 0.3);
-                --removed-text: #fee2e2;
-            }
-        }
-
-        * { box-sizing: border-box; }
+        /* 首页特定样式 */
         body {
-            margin: 0;
-            font-family: system-ui, -apple-system, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+            min-height: 100vh;
         }
 
-        /* Header */
-        header {
-            padding: 1rem;
+        /* 顶部导航 */
+        .navbar {
+            background: var(--bg-primary);
             border-bottom: 1px solid var(--border-color);
-            background-color: var(--card-bg);
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            flex-shrink: 0;
-        }
-        .header-top { display: flex; justify-content: space-between; align-items: center; }
-        .title-area { display: flex; align-items: center; gap: 0.75rem; }
-        .icon-box {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 0.5rem;
-            border-radius: 0.5rem;
-            display: flex;
-        }
-        h1 { margin: 0; font-size: 1.25rem; font-weight: 700; }
-        .subtitle { margin: 0; font-size: 0.875rem; color: var(--text-muted); }
-
-        .controls {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-            background: var(--card-bg);
-            padding: 0.5rem;
-            border: 1px solid var(--border-color);
-            border-radius: 0.5rem;
-        }
-        
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            font-weight: 500;
-            font-size: 0.875rem;
-            cursor: pointer;
-            border: none;
-            transition: all 0.2s;
-            gap: 0.5rem;
-        }
-        .btn-primary { background-color: var(--primary-color); color: white; }
-        .btn-primary:hover { background-color: var(--primary-hover); }
-        .btn-ghost { background-color: transparent; color: var(--text-muted); }
-        .btn-ghost:hover { background-color: rgba(0,0,0,0.05); color: var(--text-main); }
-        
-        .toggle-label {
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            font-size: 0.875rem;
-            user-select: none;
-        }
-        .toggle-input { display: none; }
-        .toggle-track {
-            width: 2.5rem;
-            height: 1.5rem;
-            background-color: #d1d5db;
-            border-radius: 9999px;
-            position: relative;
-            transition: background-color 0.2s;
-            margin-right: 0.75rem;
-        }
-        .toggle-input:checked + .toggle-track { background-color: var(--primary-color); }
-        .toggle-thumb {
-            width: 1rem;
-            height: 1rem;
-            background-color: white;
-            border-radius: 50%;
-            position: absolute;
-            top: 0.25rem;
-            left: 0.25rem;
-            transition: transform 0.2s;
-        }
-        .toggle-input:checked + .toggle-track .toggle-thumb { transform: translateX(1rem); }
-
-        /* Tabs */
-        .tabs {
-            display: flex;
-            gap: 0.25rem;
-            background-color: rgba(0,0,0,0.05);
-            padding: 0.25rem;
-            border-radius: 0.5rem;
-            align-self: flex-start;
-        }
-        .tab-btn {
-            padding: 0.5rem 1rem;
-            border-radius: 0.375rem;
-            border: none;
-            background: none;
-            cursor: pointer;
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .tab-btn.active {
-            background-color: var(--card-bg);
-            color: var(--primary-color);
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-        }
-        .tab-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        /* Main Content */
-        main {
-            flex: 1;
-            padding: 1rem;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Editor View */
-        .editor-view {
-            display: flex;
-            gap: 1rem;
-            height: 100%;
-        }
-        .editor-pane {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-width: 0;
-        }
-        .pane-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem;
-            font-size: 0.875rem;
-            font-weight: 600;
-        }
-        .pane-actions { display: flex; gap: 0.5rem; }
-        .action-btn {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.75rem;
-            border-radius: 0.25rem;
-            border: 1px solid var(--border-color);
-            background: var(--card-bg);
-            cursor: pointer;
-            color: var(--text-muted);
-        }
-        .action-btn:hover { color: var(--primary-color); border-color: var(--primary-color); }
-
-        .editor-container {
-            flex: 1;
-            border: 1px solid var(--border-color);
-            border-radius: 0.75rem;
-            background-color: var(--card-bg);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            position: relative;
-        }
-        .editor-container.error { border-color: var(--error-text); }
-
-        .textarea-wrapper {
-            flex: 1;
-            position: relative;
-            display: flex;
-            overflow: hidden;
-        }
-        
-        /* Line Numbers */
-        .line-numbers {
-            width: 3rem;
-            background-color: rgba(0,0,0,0.02);
-            border-right: 1px solid var(--border-color);
-            text-align: right;
-            padding: 1rem 0.5rem;
-            font-family: var(--font-mono);
-            font-size: 0.875rem;
-            line-height: 1.5rem;
-            color: var(--text-muted);
-            user-select: none;
-            overflow: hidden;
-        }
-
-        /* Textarea & Highlight Overlay */
-        .code-area {
-            flex: 1;
-            position: relative;
-            overflow: hidden;
-        }
-        .code-overlay, textarea {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            padding: 1rem;
-            margin: 0;
-            border: none;
-            background: transparent;
-            font-family: var(--font-mono);
-            font-size: 0.875rem;
-            line-height: 1.5rem;
-            white-space: pre;
-            overflow: auto;
-        }
-        .code-overlay {
-            pointer-events: none;
-            color: var(--text-main);
-            z-index: 1;
-        }
-        textarea {
-            color: transparent;
-            caret-color: var(--text-main);
-            z-index: 2;
-            resize: none;
-            outline: none;
-        }
-
-        /* Syntax Highlighting */
-        .hl-key { color: #2563eb; font-weight: 600; } /* Blue */
-        .hl-string { color: #16a34a; } /* Green */
-        .hl-number { color: #9333ea; } /* Purple */
-        .hl-bool { color: #ea580c; } /* Orange */
-        .hl-null { color: #6b7280; } /* Gray */
-        
-        @media (prefers-color-scheme: dark) {
-            .hl-key { color: #60a5fa; }
-            .hl-string { color: #4ade80; }
-            .hl-number { color: #c084fc; }
-            .hl-bool { color: #fb923c; }
-        }
-
-        .status-bar {
-            padding: 0.25rem 0.75rem;
-            background-color: rgba(0,0,0,0.02);
-            border-top: 1px solid var(--border-color);
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            display: flex;
-            justify-content: space-between;
-        }
-        .status-valid { color: var(--success-text); display: flex; align-items: center; gap: 0.25rem; }
-        .status-invalid { color: var(--error-text); display: flex; align-items: center; gap: 0.25rem; }
-
-        .error-toast {
-            position: absolute;
-            top: 0; left: 3rem; right: 0;
-            background-color: var(--error-bg);
-            color: var(--error-text);
-            padding: 0.5rem;
-            font-size: 0.75rem;
-            border-bottom: 1px solid var(--error-text);
-            z-index: 10;
-        }
-
-        /* Diff View */
-        .diff-view {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 0.75rem;
-            overflow: hidden;
-        }
-        .diff-header {
-            padding: 0.75rem 1.5rem;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .diff-status { display: flex; align-items: center; gap: 0.5rem; font-weight: 600; }
-        .status-match { color: var(--success-text); background: var(--success-bg); padding: 0.25rem 0.75rem; border-radius: 9999px; }
-        .status-diff { color: var(--error-text); background: var(--error-bg); padding: 0.25rem 0.75rem; border-radius: 9999px; }
-
-        .diff-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        
-        .diff-summary-panel {
-            border-bottom: 1px solid var(--border-color);
-            background-color: rgba(0,0,0,0.02);
-        }
-        .summary-toggle {
-            width: 100%;
-            text-align: left;
-            padding: 0.5rem 1.5rem;
-            border: none;
-            background: none;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            display: flex;
-            justify-content: space-between;
-        }
-        .summary-list {
-            padding: 0.5rem 1.5rem;
-            max-height: 150px;
-            overflow-y: auto;
-            border-top: 1px solid var(--border-color);
-        }
-        .summary-item {
-            font-size: 0.875rem;
-            padding: 0.5rem;
-            border: 1px solid transparent;
-            border-radius: 0.375rem;
-            margin-bottom: 0.5rem;
-            display: flex;
-            gap: 0.5rem;
-            align-items: flex-start;
-        }
-        .summary-item.added { background: var(--added-bg); color: var(--added-text); border-color: rgba(22, 163, 74, 0.2); }
-        .summary-item.removed { background: var(--removed-bg); color: var(--removed-text); border-color: rgba(220, 38, 38, 0.2); }
-        .summary-item.modified { background: #fef9c3; color: #854d0e; border-color: #fde047; }
-        @media (prefers-color-scheme: dark) {
-            .summary-item.modified { background: rgba(234, 179, 8, 0.2); color: #fde047; border-color: rgba(234, 179, 8, 0.3); }
-        }
-
-        .diff-panes {
-            flex: 1;
-            display: flex;
-            overflow: auto;
-        }
-        .diff-pane {
-            flex: 1;
-            min-width: 0;
-            border-right: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-        }
-        .diff-pane:last-child { border-right: none; }
-        .diff-pane-title {
+            padding: var(--spacing-md) var(--spacing-xl);
+            box-shadow: var(--shadow-sm);
             position: sticky;
             top: 0;
-            background: var(--card-bg);
-            padding: 0.5rem;
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: var(--text-muted);
-            border-bottom: 1px solid var(--border-color);
-            z-index: 10;
+            z-index: 100;
         }
-        
-        .diff-row {
-            display: flex;
-            font-family: var(--font-mono);
-            font-size: 0.875rem;
-            line-height: 1.5rem;
-            padding: 0 0.5rem;
-        }
-        .diff-row:hover { opacity: 0.9; }
-        .diff-num {
-            width: 2rem;
-            text-align: right;
-            padding-right: 0.5rem;
-            color: var(--text-muted);
-            user-select: none;
-            font-size: 0.75rem;
-        }
-        .diff-marker {
-            width: 1rem;
-            text-align: center;
-            font-weight: bold;
-            user-select: none;
-        }
-        .diff-text { white-space: pre; flex: 1; overflow: hidden; text-overflow: ellipsis; }
-        
-        .row-add { background-color: var(--added-bg); }
-        .row-add .diff-text { color: var(--added-text); }
-        .row-add .diff-marker { color: var(--success-text); }
-        
-        .row-rem { background-color: var(--removed-bg); }
-        .row-rem .diff-text { color: var(--removed-text); }
-        .row-rem .diff-marker { color: var(--error-text); }
-        
-        .row-empty { background-color: rgba(0,0,0,0.02); }
 
-        /* Icons */
-        .icon { width: 1em; height: 1em; display: inline-block; vertical-align: middle; }
-        
-        .hidden { display: none !important; }
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            font-size: 1.75rem;
+        }
+
+        .search-box {
+            padding: var(--spacing-sm) var(--spacing-md);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            background: var(--bg-secondary);
+            font-size: 0.875rem;
+            width: 300px;
+            transition: all 0.2s;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+            background: var(--bg-primary);
+        }
+
+        /* 主内容区 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--spacing-xl);
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin: 0 0 var(--spacing-sm) 0;
+            background: linear-gradient(135deg, var(--primary), #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .page-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        /* 工具卡片网格 */
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: var(--spacing-lg);
+            margin-top: var(--spacing-xl);
+        }
+
+        .tool-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-lg);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tool-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary);
+        }
+
+        .tool-icon {
+            font-size: 2.5rem;
+            margin-bottom: var(--spacing-md);
+            display: block;
+        }
+
+        .tool-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0 0 var(--spacing-xs) 0;
+            color: var(--text-primary);
+        }
+
+        .tool-description {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin: 0 0 var(--spacing-md) 0;
+            line-height: 1.5;
+        }
+
+        .tool-category {
+            display: inline-block;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            background: var(--primary-light);
+            color: var(--primary);
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .tool-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: var(--spacing-md);
+            padding-top: var(--spacing-md);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .tool-link {
+            color: var(--primary);
+            font-weight: 500;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .tool-link::after {
+            content: '→';
+            transition: transform 0.2s;
+        }
+
+        .tool-card:hover .tool-link::after {
+            transform: translateX(4px);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: var(--spacing-xl);
+            color: var(--text-muted);
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .search-box {
+                width: 100%;
+            }
+            
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .navbar-content {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
     </style>
 </head>
 <body>
-
-<header>
-    <div class="header-top">
-        <div class="title-area">
-            <div class="icon-box">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 17.58A5 5 0 0 0 18 8h-1.26A8 8 0 1 0 4 16.25"/><line x1="8" y1="16" x2="8.01" y2="16"/><line x1="8" y1="20" x2="8.01" y2="20"/><line x1="12" y1="18" x2="12.01" y2="18"/><line x1="12" y1="22" x2="12.01" y2="22"/><line x1="16" y1="16" x2="16.01" y2="16"/><line x1="16" y1="20" x2="16.01" y2="20"/></svg>
-            </div>
-            <div>
-                <h1>JSON 智能对比</h1>
-                <p class="subtitle">忽略对象键序，支持忽略数组元素顺序</p>
-            </div>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="/" class="logo">
+                <span class="logo-icon">🛠️</span>
+                <span>工具集合</span>
+            </a>
+            <input type="search" class="search-box" placeholder="搜索工具..." id="searchInput">
         </div>
-        <div class="controls">
-            <label class="toggle-label">
-                <input type="checkbox" id="ignoreArrayOrder" class="toggle-input" checked>
-                <div class="toggle-track"><div class="toggle-thumb"></div></div>
-                <span>忽略数组顺序</span>
-            </label>
-            <div style="width: 1px; height: 1.5rem; background: var(--border-color); margin: 0 0.5rem;"></div>
-            <button class="btn btn-ghost" onclick="loadDemo()">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg>
-                加载示例
-            </button>
-            <button class="btn btn-primary" onclick="compareJson()">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                开始对比
-            </button>
-        </div>
-    </div>
-    <div class="tabs">
-        <button class="tab-btn active" id="tab-edit" onclick="switchTab('edit')">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
-            编辑输入
-        </button>
-        <button class="tab-btn" id="tab-diff" onclick="switchTab('diff')" disabled>
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            对比结果
-        </button>
-    </div>
-</header>
+    </nav>
 
-<main>
-    <!-- EDIT VIEW -->
-    <div id="view-edit" class="editor-view">
-        <!-- Left Input -->
-        <div class="editor-pane">
-            <div class="pane-header">
-                <span>JSON 数据 A (基准)</span>
-                <div class="pane-actions">
-                    <button class="action-btn" onclick="formatJson('left')">格式化</button>
-                    <button class="action-btn" onclick="clearJson('left')">清空</button>
-                </div>
-            </div>
-            <div class="editor-container" id="container-left">
-                <div class="error-toast hidden" id="error-left"></div>
-                <div class="textarea-wrapper">
-                    <div class="line-numbers" id="lines-left">1</div>
-                    <div class="code-area">
-                        <pre class="code-overlay" id="hl-left"></pre>
-                        <textarea id="input-left" spellcheck="false" placeholder='{\n  "key": "value"\n}'></textarea>
-                    </div>
-                </div>
-                <div class="status-bar">
-                    <span id="stats-left">行数: 1 字符: 0</span>
-                    <span id="valid-left" class="status-valid hidden"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 有效</span>
-                </div>
-            </div>
+    <!-- 主内容 -->
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">在线实用工具</h1>
+            <p class="page-subtitle">免费、快速、无需注册的在线工具集合</p>
         </div>
 
-        <!-- Right Input -->
-        <div class="editor-pane">
-            <div class="pane-header">
-                <span>JSON 数据 B (对比)</span>
-                <div class="pane-actions">
-                    <button class="action-btn" onclick="formatJson('right')">格式化</button>
-                    <button class="action-btn" onclick="clearJson('right')">清空</button>
+        <!-- 工具网格 -->
+        <div class="tools-grid" id="toolsGrid">
+            <!-- 工具卡片 -->
+            <a href="/tools/json-smart-diff" class="tool-card" data-name="JSON 智能对比" data-description="忽略对象键序，支持忽略数组元素顺序的智能 JSON 对比工具" data-category="JSON">
+                <span class="tool-icon">🔍</span>
+                <h3 class="tool-name">JSON 智能对比</h3>
+                <p class="tool-description">
+                    忽略对象键序，支持忽略数组元素顺序的智能 JSON 对比工具。支持可视化差异展示和详细差异摘要。
+                </p>
+                <span class="tool-category">JSON</span>
+                <div class="tool-footer">
+                    <span class="tool-link">使用工具</span>
                 </div>
-            </div>
-            <div class="editor-container" id="container-right">
-                <div class="error-toast hidden" id="error-right"></div>
-                <div class="textarea-wrapper">
-                    <div class="line-numbers" id="lines-right">1</div>
-                    <div class="code-area">
-                        <pre class="code-overlay" id="hl-right"></pre>
-                        <textarea id="input-right" spellcheck="false" placeholder='{\n  "key": "value"\n}'></textarea>
-                    </div>
-                </div>
-                <div class="status-bar">
-                    <span id="stats-right">行数: 1 字符: 0</span>
-                    <span id="valid-right" class="status-valid hidden"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 有效</span>
-                </div>
-            </div>
+            </a>
+
+            <!-- 可以在这里添加更多工具卡片 -->
+        </div>
+
+        <div class="empty-state hidden" id="emptyState">
+            <p>没有找到匹配的工具</p>
         </div>
     </div>
 
-    <!-- DIFF VIEW -->
-    <div id="view-diff" class="diff-view hidden">
-        <div class="diff-header">
-            <div class="diff-status" id="diff-status-area">
-                <!-- Populated by JS -->
-            </div>
-            <button class="btn btn-ghost" onclick="switchTab('edit')">返回编辑</button>
-        </div>
-        
-        <div class="diff-content">
-            <div class="diff-summary-panel">
-                <button class="summary-toggle" onclick="toggleSummary()">
-                    <span id="summary-title">差异摘要 (0)</span>
-                    <span id="summary-icon">▼</span>
-                </button>
-                <div class="summary-list" id="summary-list">
-                    <!-- Populated by JS -->
-                </div>
-            </div>
-            
-            <div class="diff-panes">
-                <div class="diff-pane">
-                    <div class="diff-pane-title">JSON A (标准化)</div>
-                    <div id="diff-out-left"></div>
-                </div>
-                <div class="diff-pane">
-                    <div class="diff-pane-title">JSON B (标准化)</div>
-                    <div id="diff-out-right"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-</main>
+    <script src="/assets/js/common.js"></script>
+    <script>
+        // 搜索功能
+        const searchInput = document.getElementById('searchInput');
+        const toolsGrid = document.getElementById('toolsGrid');
+        const emptyState = document.getElementById('emptyState');
+        const toolCards = document.querySelectorAll('.tool-card');
 
-<script>
-    // --- Core Logic (Ported from React) ---
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase().trim();
+            let visibleCount = 0;
 
-    function normalizeJson(data, ignoreArrayOrder) {
-        if (data === null || typeof data !== 'object') {
-            return data;
-        }
-
-        if (Array.isArray(data)) {
-            const normalizedItems = data.map(item => normalizeJson(item, ignoreArrayOrder));
-            if (ignoreArrayOrder) {
-                return normalizedItems.sort((a, b) => {
-                    return JSON.stringify(a).localeCompare(JSON.stringify(b));
-                });
-            }
-            return normalizedItems;
-        }
-
-        const sortedKeys = Object.keys(data).sort();
-        const result = {};
-        sortedKeys.forEach(key => {
-            result[key] = normalizeJson(data[key], ignoreArrayOrder);
-        });
-
-        return result;
-    }
-
-    function getType(obj) {
-        if (obj === null) return 'null';
-        if (Array.isArray(obj)) return 'array';
-        return typeof obj;
-    }
-
-    function getDetailedDiff(oldObj, newObj, path = '$') {
-        let diffs = [];
-
-        if (getType(oldObj) !== getType(newObj)) {
-            return [{
-                type: 'MODIFIED',
-                path,
-                oldVal: JSON.stringify(oldObj),
-                newVal: JSON.stringify(newObj)
-            }];
-        }
-
-        if (typeof oldObj !== 'object' || oldObj === null) {
-            if (oldObj !== newObj) {
-                return [{
-                    type: 'MODIFIED',
-                    path,
-                    oldVal: String(oldObj),
-                    newVal: String(newObj)
-                }];
-            }
-            return [];
-        }
-
-        if (Array.isArray(oldObj)) {
-            const maxLen = Math.max(oldObj.length, newObj.length);
-            for (let i = 0; i < maxLen; i++) {
-                const currentPath = `${path}[${i}]`;
-                if (i >= oldObj.length) {
-                    diffs.push({ type: 'ADDED', path: currentPath, newVal: JSON.stringify(newObj[i]) });
-                } else if (i >= newObj.length) {
-                    diffs.push({ type: 'REMOVED', path: currentPath, oldVal: JSON.stringify(oldObj[i]) });
+            toolCards.forEach(card => {
+                const name = card.dataset.name.toLowerCase();
+                const description = card.dataset.description.toLowerCase();
+                const category = card.dataset.category.toLowerCase();
+                
+                const matches = name.includes(searchTerm) || 
+                               description.includes(searchTerm) || 
+                               category.includes(searchTerm);
+                
+                if (matches || !searchTerm) {
+                    card.style.display = 'block';
+                    visibleCount++;
                 } else {
-                    diffs = diffs.concat(getDetailedDiff(oldObj[i], newObj[i], currentPath));
+                    card.style.display = 'none';
                 }
-            }
-            return diffs;
-        }
+            });
 
-        const oldKeys = Object.keys(oldObj);
-        const newKeys = Object.keys(newObj);
-        const allKeys = new Set([...oldKeys, ...newKeys]);
-
-        allKeys.forEach(key => {
-            const currentPath = path === '$' ? key : `${path}.${key}`;
-            if (!oldObj.hasOwnProperty(key)) {
-                diffs.push({ type: 'ADDED', path: currentPath, newVal: JSON.stringify(newObj[key]) });
-            } else if (!newObj.hasOwnProperty(key)) {
-                diffs.push({ type: 'REMOVED', path: currentPath, oldVal: JSON.stringify(oldObj[key]) });
+            // 显示/隐藏空状态
+            if (visibleCount === 0 && searchTerm) {
+                emptyState.classList.remove('hidden');
+                toolsGrid.style.display = 'none';
             } else {
-                diffs = diffs.concat(getDetailedDiff(oldObj[key], newObj[key], currentPath));
+                emptyState.classList.add('hidden');
+                toolsGrid.style.display = 'grid';
             }
         });
-
-        return diffs;
-    }
-
-    function computeDiff(text1, text2) {
-        const lines1 = text1.split('\n');
-        const lines2 = text2.split('\n');
-        const m = lines1.length;
-        const n = lines2.length;
-
-        const dp = Array(m + 1).fill(0).map(() => Array(n + 1).fill(0));
-
-        for (let i = 1; i <= m; i++) {
-            for (let j = 1; j <= n; j++) {
-                if (lines1[i - 1] === lines2[j - 1]) {
-                    dp[i][j] = dp[i - 1][j - 1] + 1;
-                } else {
-                    dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
-                }
-            }
-        }
-
-        let i = m, j = n;
-        const changes = [];
-
-        while (i > 0 || j > 0) {
-            if (i > 0 && j > 0 && lines1[i - 1] === lines2[j - 1]) {
-                changes.unshift({ type: 'eq', content: lines1[i - 1] });
-                i--; j--;
-            } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
-                changes.unshift({ type: 'add', content: lines2[j - 1] });
-                j--;
-            } else if (i > 0 && (j === 0 || dp[i][j - 1] < dp[i - 1][j])) {
-                changes.unshift({ type: 'rem', content: lines1[i - 1] });
-                i--;
-            }
-        }
-
-        return changes;
-    }
-
-    function generateSideBySide(changes) {
-        const leftLines = [];
-        const rightLines = [];
-
-        changes.forEach(change => {
-            if (change.type === 'eq') {
-                leftLines.push({ type: 'eq', content: change.content });
-                rightLines.push({ type: 'eq', content: change.content });
-            } else if (change.type === 'rem') {
-                leftLines.push({ type: 'rem', content: change.content });
-                rightLines.push({ type: 'empty', content: '' });
-            } else if (change.type === 'add') {
-                leftLines.push({ type: 'empty', content: '' });
-                rightLines.push({ type: 'add', content: change.content });
-            }
-        });
-
-        return { leftLines, rightLines };
-    }
-
-    function highlightJson(code) {
-        if (!code) return '';
-        return code.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, (match) => {
-            let cls = 'hl-number';
-            if (/^"/.test(match)) {
-                if (/:$/.test(match)) {
-                    cls = 'hl-key';
-                } else {
-                    cls = 'hl-string';
-                }
-            } else if (/true|false/.test(match)) {
-                cls = 'hl-bool';
-            } else if (/null/.test(match)) {
-                cls = 'hl-null';
-            }
-            return `<span class="${cls}">${match}</span>`;
-        });
-    }
-
-    // --- UI Logic ---
-
-    const inputs = {
-        left: document.getElementById('input-left'),
-        right: document.getElementById('input-right')
-    };
-    
-    // Sync scroll and highlight
-    function setupEditor(side) {
-        const input = inputs[side];
-        const lines = document.getElementById(`lines-${side}`);
-        const hl = document.getElementById(`hl-${side}`);
-        const stats = document.getElementById(`stats-${side}`);
-        const validBadge = document.getElementById(`valid-${side}`);
-        const container = document.getElementById(`container-${side}`);
-        const errorToast = document.getElementById(`error-${side}`);
-
-        const update = () => {
-            const val = input.value;
-            // Update Lines
-            const lineCount = val.split('\n').length;
-            lines.innerHTML = Array.from({length: lineCount}, (_, i) => `<div>${i+1}</div>`).join('');
-            
-            // Update Highlight
-            hl.innerHTML = highlightJson(val) + '<br/>'; // br for last newline
-            
-            // Update Stats
-            stats.textContent = `行数: ${lineCount} 字符: ${val.length}`;
-            
-            // Validate
-            if (!val.trim()) {
-                validBadge.classList.add('hidden');
-                container.classList.remove('error');
-                errorToast.classList.add('hidden');
-                return;
-            }
-            try {
-                JSON.parse(val);
-                validBadge.classList.remove('hidden');
-                container.classList.remove('error');
-                errorToast.classList.add('hidden');
-            } catch (e) {
-                validBadge.classList.add('hidden');
-                // Don't show error immediately on typing, only on compare or format
-            }
-        };
-
-        input.addEventListener('input', update);
-        input.addEventListener('scroll', () => {
-            lines.scrollTop = input.scrollTop;
-            hl.scrollTop = input.scrollTop;
-            hl.scrollLeft = input.scrollLeft;
-        });
-        
-        // Init
-        update();
-    }
-
-    setupEditor('left');
-    setupEditor('right');
-
-    function formatJson(side) {
-        const input = inputs[side];
-        const val = input.value;
-        try {
-            const obj = JSON.parse(val);
-            input.value = JSON.stringify(obj, null, 2);
-            input.dispatchEvent(new Event('input')); // Trigger update
-            document.getElementById(`container-${side}`).classList.remove('error');
-            document.getElementById(`error-${side}`).classList.add('hidden');
-        } catch (e) {
-            showError(side, "无法格式化：JSON 语法错误");
-        }
-    }
-
-    function clearJson(side) {
-        inputs[side].value = '';
-        inputs[side].dispatchEvent(new Event('input'));
-        document.getElementById(`container-${side}`).classList.remove('error');
-        document.getElementById(`error-${side}`).classList.add('hidden');
-    }
-
-    function showError(side, msg) {
-        const container = document.getElementById(`container-${side}`);
-        const toast = document.getElementById(`error-${side}`);
-        container.classList.add('error');
-        toast.textContent = msg;
-        toast.classList.remove('hidden');
-    }
-
-    function loadDemo() {
-        const dataA = {
-            id: 101,
-            name: "测试项目",
-            settings: { theme: "dark", notifications: true, retry: 3 },
-            tags: ["React", "JSON", "Tools"],
-            version: "1.0.0"
-        };
-        const dataB = {
-            name: "测试项目",
-            id: 101,
-            settings: { notifications: false, theme: "dark" },
-            tags: ["Tools", "React", "JSON"],
-            version: "1.0.1",
-            extra: "New Field"
-        };
-        inputs.left.value = JSON.stringify(dataA, null, 2);
-        inputs.right.value = JSON.stringify(dataB, null, 2);
-        inputs.left.dispatchEvent(new Event('input'));
-        inputs.right.dispatchEvent(new Event('input'));
-        switchTab('edit');
-    }
-
-    function switchTab(tab) {
-        document.getElementById('view-edit').classList.add('hidden');
-        document.getElementById('view-diff').classList.add('hidden');
-        document.getElementById('tab-edit').classList.remove('active');
-        document.getElementById('tab-diff').classList.remove('active');
-
-        document.getElementById(`view-${tab}`).classList.remove('hidden');
-        document.getElementById(`tab-${tab}`).classList.add('active');
-    }
-
-    function toggleSummary() {
-        const list = document.getElementById('summary-list');
-        const icon = document.getElementById('summary-icon');
-        if (list.style.display === 'none') {
-            list.style.display = 'block';
-            icon.textContent = '▼';
-        } else {
-            list.style.display = 'none';
-            icon.textContent = '▶';
-        }
-    }
-
-    function compareJson() {
-        const valA = inputs.left.value;
-        const valB = inputs.right.value;
-        let objA, objB;
-
-        try {
-            objA = JSON.parse(valA);
-        } catch (e) {
-            showError('left', `解析错误: ${e.message}`);
-            return;
-        }
-        try {
-            objB = JSON.parse(valB);
-        } catch (e) {
-            showError('right', `解析错误: ${e.message}`);
-            return;
-        }
-
-        const ignoreOrder = document.getElementById('ignoreArrayOrder').checked;
-        
-        // 1. Normalize
-        const normA = normalizeJson(objA, ignoreOrder);
-        const normB = normalizeJson(objB, ignoreOrder);
-        const strA = JSON.stringify(normA, null, 2);
-        const strB = JSON.stringify(normB, null, 2);
-
-        // 2. Summary
-        const summary = getDetailedDiff(normA, normB);
-        renderSummary(summary);
-
-        // 3. Visual Diff
-        const changes = computeDiff(strA, strB);
-        const { leftLines, rightLines } = generateSideBySide(changes);
-        renderDiffLines(leftLines, 'diff-out-left');
-        renderDiffLines(rightLines, 'diff-out-right');
-
-        // 4. Status
-        const statusArea = document.getElementById('diff-status-area');
-        const tabDiff = document.getElementById('tab-diff');
-        
-        if (strA === strB) {
-            statusArea.innerHTML = '<span class="status-match">完全匹配</span>';
-        } else {
-            statusArea.innerHTML = `<span class="status-diff">发现 ${summary.length} 处差异</span>`;
-        }
-        
-        tabDiff.disabled = false;
-        switchTab('diff');
-    }
-
-    function renderSummary(items) {
-        const list = document.getElementById('summary-list');
-        const title = document.getElementById('summary-title');
-        title.textContent = `差异摘要 (${items.length})`;
-        
-        if (items.length === 0) {
-            list.innerHTML = '<div style="padding:0.5rem; color:#9ca3af;">无结构性差异</div>';
-            return;
-        }
-
-        list.innerHTML = items.map(item => {
-            let typeClass = '';
-            let label = '';
-            let content = '';
-            
-            if (item.type === 'ADDED') {
-                typeClass = 'added';
-                label = '新增';
-                content = `: ${escapeHtml(item.newVal)}`;
-            } else if (item.type === 'REMOVED') {
-                typeClass = 'removed';
-                label = '删除';
-                content = `: ${escapeHtml(item.oldVal)}`;
-            } else {
-                typeClass = 'modified';
-                label = '修改';
-                content = ` <span style="text-decoration:line-through; opacity:0.6">${escapeHtml(item.oldVal)}</span> → <span>${escapeHtml(item.newVal)}</span>`;
-            }
-
-            return `
-                <div class="summary-item ${typeClass}">
-                    <strong style="flex-shrink:0">[${label}]</strong>
-                    <span style="font-family:monospace; font-weight:600">${item.path}</span>
-                    <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:inherit; opacity:0.8">${content}</span>
-                </div>
-            `;
-        }).join('');
-    }
-
-    function renderDiffLines(lines, containerId) {
-        const container = document.getElementById(containerId);
-        container.innerHTML = lines.map((line, idx) => {
-            let rowClass = '';
-            let marker = '&nbsp;';
-            let num = line.type !== 'empty' ? idx + 1 : '';
-            
-            if (line.type === 'add') { rowClass = 'row-add'; marker = '+'; }
-            else if (line.type === 'rem') { rowClass = 'row-rem'; marker = '-'; }
-            else if (line.type === 'empty') { rowClass = 'row-empty'; }
-            
-            const content = line.content ? highlightJson(line.content) : '';
-            
-            return `
-                <div class="diff-row ${rowClass}">
-                    <div class="diff-num">${num}</div>
-                    <div class="diff-marker">${marker}</div>
-                    <div class="diff-text">${content}</div>
-                </div>
-            `;
-        }).join('');
-    }
-
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/&/g, "&amp;")
-                  .replace(/</g, "&lt;")
-                  .replace(/>/g, "&gt;")
-                  .replace(/"/g, "&quot;")
-                  .replace(/'/g, "&#039;");
-    }
-
-</script>
-
+    </script>
 </body>
 </html>
