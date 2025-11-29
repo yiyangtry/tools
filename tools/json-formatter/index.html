@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON 格式化/压缩工具 - 工具集合</title>
+    <link rel="stylesheet" href="/assets/css/common.css">
+    <style>
+        body {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* 返回首页链接 */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: var(--primary);
+        }
+
+        /* Header */
+        header {
+            padding: var(--spacing-md);
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--bg-primary);
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+            flex-shrink: 0;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+        }
+
+        .title-area {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .icon-box {
+            background-color: var(--primary);
+            color: white;
+            padding: var(--spacing-sm);
+            border-radius: var(--border-radius-sm);
+            display: flex;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            margin: 0;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .controls {
+            display: flex;
+            gap: var(--spacing-sm);
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            padding: var(--spacing-md);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+
+        .editor-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-sm);
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .editor-actions {
+            display: flex;
+            gap: var(--spacing-xs);
+            align-items: center;
+        }
+
+        .action-btn-small {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.375rem;
+            padding: 0.375rem 0.75rem;
+            font-size: 0.75rem;
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: var(--border-radius-sm);
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .action-btn-small:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border-color: var(--primary);
+        }
+
+        .action-btn-small .icon {
+            width: 14px;
+            height: 14px;
+        }
+
+        .status-bar {
+            padding: var(--spacing-xs) var(--spacing-md);
+            background-color: rgba(0,0,0,0.02);
+            border-top: 1px solid var(--border-color);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .textarea-wrapper {
+            flex: 1;
+            position: relative;
+            display: flex;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            background-color: var(--bg-primary);
+        }
+
+        .line-numbers {
+            width: 3rem;
+            background-color: rgba(0,0,0,0.02);
+            border-right: 1px solid var(--border-color);
+            text-align: right;
+            padding: var(--spacing-md) var(--spacing-sm);
+            font-family: var(--font-mono);
+            font-size: 0.875rem;
+            line-height: 1.5rem;
+            color: var(--text-muted);
+            user-select: none;
+            overflow: hidden;
+        }
+
+        .code-area {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .code-overlay, textarea {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: var(--spacing-md);
+            margin: 0;
+            border: none;
+            background: transparent;
+            font-family: var(--font-mono);
+            font-size: 0.875rem;
+            line-height: 1.5rem;
+            white-space: pre;
+            overflow: auto;
+        }
+
+        .code-overlay {
+            pointer-events: none;
+            color: var(--text-primary);
+            z-index: 1;
+        }
+
+        textarea {
+            color: transparent;
+            caret-color: var(--text-primary);
+            z-index: 2;
+            resize: none;
+            outline: none;
+        }
+
+
+        .status-valid {
+            color: var(--success-text);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .status-invalid {
+            color: var(--error-text);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .error-toast {
+            position: absolute;
+            top: 0;
+            left: 3rem;
+            right: 0;
+            background-color: var(--error-bg);
+            color: var(--error-text);
+            padding: var(--spacing-sm);
+            font-size: 0.75rem;
+            border-bottom: 1px solid var(--error-text);
+            z-index: 10;
+        }
+
+        /* Syntax Highlighting */
+        .hl-key { color: #2563eb; font-weight: 600; }
+        .hl-string { color: #16a34a; }
+        .hl-number { color: #9333ea; }
+        .hl-bool { color: #ea580c; }
+        .hl-null { color: #6b7280; }
+
+        @media (prefers-color-scheme: dark) {
+            .hl-key { color: #60a5fa; }
+            .hl-string { color: #4ade80; }
+            .hl-number { color: #c084fc; }
+            .hl-bool { color: #fb923c; }
+        }
+
+        /* 单栏布局，移除左右分栏 */
+
+        .icon {
+            width: 1em;
+            height: 1em;
+            display: inline-block;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-top">
+            <div>
+                <a href="/" class="back-link">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                    返回工具列表
+                </a>
+                <div class="title-area">
+                    <div class="icon-box">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    </div>
+                    <div>
+                        <h1>JSON 格式化/压缩工具</h1>
+                        <p class="subtitle">格式化、压缩、美化 JSON 数据</p>
+                    </div>
+                </div>
+            </div>
+            <div class="controls">
+                <button class="btn btn-ghost" onclick="loadDemo()">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg>
+                    加载示例
+                </button>
+                <button class="btn btn-primary" onclick="formatJson()">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    格式化
+                </button>
+                <button class="btn btn-primary" onclick="compressJson()">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                    压缩
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- 单栏编辑器 -->
+        <div class="editor-container">
+            <div class="editor-header">
+                <span>JSON 编辑器</span>
+                <div class="editor-actions">
+                    <button class="action-btn-small" onclick="copyInput()" title="复制 (Ctrl+C)">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                        复制
+                    </button>
+                    <button class="action-btn-small" onclick="clearInput()" title="清空">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                        清空
+                    </button>
+                </div>
+            </div>
+            <div class="textarea-wrapper" id="input-container">
+                <div class="error-toast hidden" id="input-error"></div>
+                <div class="line-numbers" id="input-lines">1</div>
+                <div class="code-area">
+                    <pre class="code-overlay" id="input-hl"></pre>
+                    <textarea id="input" spellcheck="false" placeholder='{"name": "示例", "value": 123}'></textarea>
+                </div>
+            </div>
+            <div class="status-bar">
+                <span id="input-stats">行数: 1 字符: 0</span>
+                <span id="input-valid" class="status-valid hidden">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    有效 JSON
+                </span>
+            </div>
+        </div>
+    </main>
+
+    <script src="/assets/js/common.js"></script>
+    <script>
+        const input = document.getElementById('input');
+        const inputLines = document.getElementById('input-lines');
+        const inputHl = document.getElementById('input-hl');
+        const inputStats = document.getElementById('input-stats');
+        const inputValid = document.getElementById('input-valid');
+        const inputError = document.getElementById('input-error');
+        const inputContainer = document.getElementById('input-container');
+
+        // JSON 语法高亮
+        function highlightJson(code) {
+            if (!code) return '';
+            return code.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, (match) => {
+                let cls = 'hl-number';
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) {
+                        cls = 'hl-key';
+                    } else {
+                        cls = 'hl-string';
+                    }
+                } else if (/true|false/.test(match)) {
+                    cls = 'hl-bool';
+                } else if (/null/.test(match)) {
+                    cls = 'hl-null';
+                }
+                return `<span class="${cls}">${escapeHtml(match)}</span>`;
+            });
+        }
+
+        // 更新输入区域
+        function updateInput() {
+            const val = input.value;
+            const lineCount = val.split('\n').length;
+            
+            inputLines.innerHTML = Array.from({length: lineCount}, (_, i) => `<div>${i+1}</div>`).join('');
+            inputHl.innerHTML = highlightJson(val) + '<br/>';
+            inputStats.textContent = `行数: ${lineCount} 字符: ${val.length}`;
+            
+            // 验证 JSON
+            if (!val.trim()) {
+                inputValid.classList.add('hidden');
+                inputContainer.classList.remove('error');
+                inputError.classList.add('hidden');
+                return;
+            }
+            
+            try {
+                JSON.parse(val);
+                inputValid.classList.remove('hidden');
+                inputContainer.classList.remove('error');
+                inputError.classList.add('hidden');
+            } catch (e) {
+                inputValid.classList.add('hidden');
+            }
+        }
+
+
+        // 同步滚动
+        input.addEventListener('scroll', () => {
+            inputLines.scrollTop = input.scrollTop;
+            inputHl.scrollTop = input.scrollTop;
+            inputHl.scrollLeft = input.scrollLeft;
+        });
+
+        input.addEventListener('input', updateInput);
+        updateInput();
+
+        // 格式化 JSON（直接替换输入框内容）
+        function formatJson() {
+            const val = input.value.trim();
+            if (!val) {
+                showError('input', '请输入 JSON 数据');
+                return;
+            }
+
+            try {
+                const obj = JSON.parse(val);
+                const formatted = JSON.stringify(obj, null, 2);
+                input.value = formatted;
+                updateInput();
+                inputContainer.classList.remove('error');
+                inputError.classList.add('hidden');
+                showNotification('已格式化', 'success');
+            } catch (e) {
+                showError('input', `JSON 解析错误: ${e.message}`);
+            }
+        }
+
+        // 压缩 JSON（直接替换输入框内容）
+        function compressJson() {
+            const val = input.value.trim();
+            if (!val) {
+                showError('input', '请输入 JSON 数据');
+                return;
+            }
+
+            try {
+                const obj = JSON.parse(val);
+                const compressed = JSON.stringify(obj);
+                input.value = compressed;
+                updateInput();
+                inputContainer.classList.remove('error');
+                inputError.classList.add('hidden');
+                showNotification('已压缩', 'success');
+            } catch (e) {
+                showError('input', `JSON 解析错误: ${e.message}`);
+            }
+        }
+
+        // 清空输入
+        function clearInput() {
+            input.value = '';
+            updateInput();
+            inputContainer.classList.remove('error');
+            inputError.classList.add('hidden');
+        }
+
+        // 复制输入
+        async function copyInput() {
+            const val = input.value.trim();
+            if (!val) {
+                showNotification('没有内容可复制', 'warning');
+                return;
+            }
+            const success = await copyToClipboard(val);
+            if (success) {
+                showNotification('已复制到剪贴板', 'success');
+            } else {
+                showNotification('复制失败', 'error');
+            }
+        }
+
+        // 显示错误
+        function showError(container, msg) {
+            if (container === 'input') {
+                inputContainer.classList.add('error');
+                inputError.textContent = msg;
+                inputError.classList.remove('hidden');
+            }
+        }
+
+        // 加载示例
+        function loadDemo() {
+            const demo = {
+                name: "示例数据",
+                version: "1.0.0",
+                features: ["格式化", "压缩", "美化"],
+                settings: {
+                    theme: "dark",
+                    language: "zh-CN",
+                    autoSave: true
+                },
+                tags: ["JSON", "工具", "实用"],
+                metadata: {
+                    created: "2024-01-01",
+                    updated: "2024-01-02",
+                    author: "工具集合"
+                }
+            };
+            input.value = JSON.stringify(demo, null, 2);
+            updateInput();
+        }
+
+        // 键盘快捷键
+        document.addEventListener('keydown', (e) => {
+            // Ctrl/Cmd + Enter: 格式化
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                formatJson();
+            }
+            // Ctrl/Cmd + Shift + Enter: 压缩
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'Enter') {
+                e.preventDefault();
+                compressJson();
+            }
+        });
+    </script>
+</body>
+</html>
+
