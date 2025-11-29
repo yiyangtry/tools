@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Deep Compare</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #e2e8f0;
+            --accent-color: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --success-color: #22c55e;
+            --error-color: #ef4444;
+            --border-color: #334155;
+            --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-family);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            width: 100%;
+            padding: 2rem 0;
+            text-align: center;
+            background: linear-gradient(to right, #0f172a, #1e293b);
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            margin: 0;
+            font-weight: 700;
+            font-size: 2rem;
+            background: linear-gradient(to right, var(--accent-color), #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 1400px;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            padding-bottom: 2rem;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            padding: 1rem;
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .editors {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            height: 60vh;
+        }
+
+        .editor-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-weight: 600;
+            color: var(--accent-color);
+        }
+
+        textarea {
+            flex: 1;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            resize: none;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        textarea:focus {
+            border-color: var(--accent-color);
+        }
+
+        button {
+            background-color: var(--accent-color);
+            color: #0f172a;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+
+        button:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 48px;
+            height: 24px;
+            background-color: var(--border-color);
+            border-radius: 12px;
+            transition: background-color 0.2s;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.2s;
+        }
+
+        input[type="checkbox"] {
+            display: none;
+        }
+
+        input[type="checkbox"]:checked+.toggle-switch {
+            background-color: var(--accent-color);
+        }
+
+        input[type="checkbox"]:checked+.toggle-switch::after {
+            transform: translateX(24px);
+        }
+
+        #result {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+            min-height: 2rem;
+            padding: 1rem;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .match {
+            color: var(--success-color);
+            background-color: rgba(34, 197, 94, 0.1);
+            border: 1px solid var(--success-color);
+        }
+
+        .mismatch {
+            color: var(--error-color);
+            background-color: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--error-color);
+        }
+
+        .error {
+            color: #fbbf24;
+            font-size: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .editors {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+
+            textarea {
+                min-height: 300px;
+            }
+
+            .visual-diff-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .diff-summary {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            display: none;
+        }
+
+        .diff-summary h3 {
+            margin-top: 0;
+            color: var(--accent-color);
+        }
+
+        .diff-item {
+            padding: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        .diff-item:last-child {
+            border-bottom: none;
+        }
+
+        .visual-diff-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+        }
+
+        .json-view {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        .json-key {
+            color: #9cdcfe;
+        }
+
+        .json-string {
+            color: #ce9178;
+        }
+
+        .json-number {
+            color: #b5cea8;
+        }
+
+        .json-boolean {
+            color: #569cd6;
+        }
+
+        .json-null {
+            color: #569cd6;
+        }
+
+        .highlight {
+            background-color: rgba(239, 68, 68, 0.2);
+            border-radius: 2px;
+            display: inline-block;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>JSON Deep Compare</h1>
+    </header>
+
+    <div class="container">
+        <div class="controls">
+            <label class="toggle-container">
+                <input type="checkbox" id="ignoreArrayOrder" checked>
+                <div class="toggle-switch"></div>
+                <span>Ignore Array Order</span>
+            </label>
+            <button onclick="compare()">Compare JSON</button>
+        </div>
+
+        <div id="result"></div>
+        <div id="diffSummary" class="diff-summary"></div>
+
+        <div class="editors">
+            <div class="editor-container">
+                <label>JSON A</label>
+                <textarea id="jsonA" placeholder="Paste JSON here..."></textarea>
+            </div>
+            <div class="editor-container">
+                <label>JSON B</label>
+                <textarea id="jsonB" placeholder="Paste JSON here..."></textarea>
+            </div>
+        </div>
+        <div id="visualDiff" class="visual-diff-container"></div>
+    </div>
+
+    <script>
+        function parseJSON(str) {
+            try {
+                try {
+                    return JSON.parse(str);
+                } catch (e) {
+                    return new Function('return ' + str)();
+                }
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function getType(item) {
+            if (item === null) return 'null';
+            if (Array.isArray(item)) return 'array';
+            return typeof item;
+        }
+
+        function deepEqual(a, b, ignoreArrayOrder) {
+            if (a === b) return true;
+            if (typeof a !== 'object' || a === null || typeof b !== 'object' || b === null) return false;
+            if (Array.isArray(a)) {
+                if (!Array.isArray(b) || a.length !== b.length) return false;
+                if (ignoreArrayOrder) {
+                    let bClone = [...b];
+                    for (let itemA of a) {
+                        let matchIndex = -1;
+                        for (let i = 0; i < bClone.length; i++) {
+                            if (deepEqual(itemA, bClone[i], ignoreArrayOrder)) {
+                                matchIndex = i;
+                                break;
+                            }
+                        }
+                        if (matchIndex === -1) return false;
+                        bClone.splice(matchIndex, 1);
+                    }
+                    return true;
+                } else {
+                    return a.every((val, i) => deepEqual(val, b[i], ignoreArrayOrder));
+                }
+            }
+            if (Array.isArray(b)) return false;
+            const keysA = Object.keys(a);
+            const keysB = Object.keys(b);
+            if (keysA.length !== keysB.length) return false;
+            for (let key of keysA) {
+                if (!keysB.includes(key) || !deepEqual(a[key], b[key], ignoreArrayOrder)) return false;
+            }
+            return true;
+        }
+
+        function findDifferences(a, b, ignoreArrayOrder, path = 'root') {
+            const diffs = [];
+
+            if (a === b) return diffs;
+
+            const typeA = getType(a);
+            const typeB = getType(b);
+
+            if (typeA !== typeB) {
+                diffs.push({ path, type: 'mismatch', msg: `Type mismatch: ${typeA} vs ${typeB}` });
+                return diffs;
+            }
+
+            if (typeA === 'array') {
+                if (a.length !== b.length) {
+                    diffs.push({ path, type: 'mismatch', msg: `Array length mismatch: ${a.length} vs ${b.length}` });
+                }
+
+                if (ignoreArrayOrder) {
+                    const matchedBIndices = new Set();
+
+                    a.forEach((itemA, indexA) => {
+                        let matchFound = false;
+                        for (let i = 0; i < b.length; i++) {
+                            if (!matchedBIndices.has(i) && deepEqual(itemA, b[i], ignoreArrayOrder)) {
+                                matchedBIndices.add(i);
+                                matchFound = true;
+                                break;
+                            }
+                        }
+                        if (!matchFound) {
+                            diffs.push({ path: `${path}[${indexA}]`, type: 'missing_in_b', msg: `Item at ${path}[${indexA}] not found in B` });
+                        }
+                    });
+
+                    const matchedAIndices = new Set();
+                    b.forEach((itemB, indexB) => {
+                        let matchFound = false;
+                        for (let i = 0; i < a.length; i++) {
+                            if (!matchedAIndices.has(i) && deepEqual(a[i], itemB, ignoreArrayOrder)) {
+                                matchedAIndices.add(i);
+                                matchFound = true;
+                                break;
+                            }
+                        }
+                        if (!matchFound) {
+                            diffs.push({ path: `${path}[${indexB}]`, type: 'missing_in_a', msg: `Item at ${path}[${indexB}] not found in A` });
+                        }
+                    });
+
+                } else {
+                    const maxLen = Math.max(a.length, b.length);
+                    for (let i = 0; i < maxLen; i++) {
+                        if (i >= a.length) {
+                            diffs.push({ path: `${path}[${i}]`, type: 'missing_in_a', msg: `Index ${i} missing in A` });
+                        } else if (i >= b.length) {
+                            diffs.push({ path: `${path}[${i}]`, type: 'missing_in_b', msg: `Index ${i} missing in B` });
+                        } else {
+                            diffs.push(...findDifferences(a[i], b[i], ignoreArrayOrder, `${path}[${i}]`));
+                        }
+                    }
+                }
+            } else if (typeA === 'object') {
+                const keysA = Object.keys(a);
+                const keysB = Object.keys(b);
+                const allKeys = new Set([...keysA, ...keysB]);
+
+                for (const key of allKeys) {
+                    if (!keysA.includes(key)) {
+                        diffs.push({ path: `${path}.${key}`, type: 'missing_in_a', msg: `Key ${key} missing in A` });
+                    } else if (!keysB.includes(key)) {
+                        diffs.push({ path: `${path}.${key}`, type: 'missing_in_b', msg: `Key ${key} missing in B` });
+                    } else {
+                        diffs.push(...findDifferences(a[key], b[key], ignoreArrayOrder, `${path}.${key}`));
+                    }
+                }
+            } else {
+                if (a !== b) {
+                    diffs.push({ path, type: 'mismatch', msg: `Value mismatch: ${a} vs ${b}` });
+                }
+            }
+            return diffs;
+        }
+
+        function buildHTML(item, path, diffs, side) {
+            const relevantDiffs = diffs.filter(d => d.path === path);
+            let isDiff = false;
+            if (side === 'A') {
+                isDiff = relevantDiffs.some(d => d.type === 'mismatch' || d.type === 'missing_in_b');
+            } else {
+                isDiff = relevantDiffs.some(d => d.type === 'mismatch' || d.type === 'missing_in_a');
+            }
+
+            const className = isDiff ? 'highlight' : '';
+
+            if (item === null) return `<span class="${className} json-null">null</span>`;
+            if (typeof item === 'boolean') return `<span class="${className} json-boolean">${item}</span>`;
+            if (typeof item === 'number') return `<span class="${className} json-number">${item}</span>`;
+            if (typeof item === 'string') return `<span class="${className} json-string">"${item}"</span>`;
+
+            if (Array.isArray(item)) {
+                let html = `<span class="${className}">[</span><div style="padding-left: 20px;">`;
+                item.forEach((sub, i) => {
+                    html += `<div>${buildHTML(sub, `${path}[${i}]`, diffs, side)}${i < item.length - 1 ? ',' : ''}</div>`;
+                });
+                html += `</div><span>]</span>`;
+                return html;
+            }
+
+            if (typeof item === 'object') {
+                let html = `<span class="${className}">{</span><div style="padding-left: 20px;">`;
+                const keys = Object.keys(item);
+                keys.forEach((key, i) => {
+                    const keyPath = `${path}.${key}`;
+                    const keyDiffs = diffs.filter(d => d.path === keyPath);
+                    let isKeyDiff = false;
+                    if (side === 'A') isKeyDiff = keyDiffs.some(d => d.type === 'missing_in_b');
+                    else isKeyDiff = keyDiffs.some(d => d.type === 'missing_in_a');
+
+                    const keyClass = isKeyDiff ? 'highlight' : '';
+
+                    html += `<div class="${keyClass}"><span class="json-key">"${key}"</span>: ${buildHTML(item[key], keyPath, diffs, side)}${i < keys.length - 1 ? ',' : ''}</div>`;
+                });
+                html += `</div><span>}</span>`;
+                return html;
+            }
+        }
+
+        function renderJSON(json, containerId, diffs, side) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = buildHTML(json, 'root', diffs, side);
+        }
+
+        function compare() {
+            const rawA = document.getElementById('jsonA').value;
+            const rawB = document.getElementById('jsonB').value;
+            const resultEl = document.getElementById('result');
+            const summaryEl = document.getElementById('diffSummary');
+            const visualDiffEl = document.getElementById('visualDiff');
+            const ignoreArrayOrder = document.getElementById('ignoreArrayOrder').checked;
+
+            resultEl.className = '';
+            resultEl.textContent = 'Comparing...';
+            summaryEl.style.display = 'none';
+            visualDiffEl.innerHTML = '';
+
+            if (!rawA.trim() || !rawB.trim()) {
+                resultEl.textContent = 'Please enter both JSONs.';
+                resultEl.className = 'error';
+                return;
+            }
+
+            const jsonA = parseJSON(rawA);
+            const jsonB = parseJSON(rawB);
+
+            if (jsonA === null || jsonB === null) {
+                resultEl.textContent = 'Invalid JSON format.';
+                resultEl.className = 'error';
+                return;
+            }
+
+            const diffs = findDifferences(jsonA, jsonB, ignoreArrayOrder);
+
+            if (diffs.length === 0) {
+                resultEl.textContent = 'MATCH ✅';
+                resultEl.className = 'match';
+            } else {
+                resultEl.textContent = 'MISMATCH ❌';
+                resultEl.className = 'mismatch';
+
+                summaryEl.style.display = 'block';
+                summaryEl.innerHTML = '<h3>Differences</h3>' + diffs.map(d => `<div class="diff-item"><strong>${d.path}</strong>: ${d.msg}</div>`).join('');
+            }
+
+            visualDiffEl.innerHTML = `
+                <div class="json-view" id="viewA"></div>
+                <div class="json-view" id="viewB"></div>
+            `;
+
+            renderJSON(jsonA, 'viewA', diffs, 'A');
+            renderJSON(jsonB, 'viewB', diffs, 'B');
+        }
+
+        function runTests() {
+            console.log('Running self-tests...');
+            const tests = [
+                { a: { x: 1 }, b: { x: 1 }, ignore: false, expect: 0 },
+                { a: { x: 1, y: 2 }, b: { y: 2, x: 1 }, ignore: false, expect: 0 },
+                { a: [1, 2], b: [2, 1], ignore: true, expect: 0 },
+                { a: [1, 2], b: [2, 1], ignore: false, expect: 2 }, // 2 diffs: index 0 and 1 mismatch
+                { a: { x: 1 }, b: { x: 2 }, ignore: false, expect: 1 },
+            ];
+
+            let passed = 0;
+            tests.forEach((t, i) => {
+                const diffs = findDifferences(t.a, t.b, t.ignore);
+                // Simple count check
+                if ((diffs.length === 0 && t.expect === 0) || (diffs.length > 0 && t.expect > 0)) {
+                    passed++;
+                } else {
+                    console.error(`Test ${i} failed`, t, diffs);
+                }
+            });
+            console.log(`Tests passed: ${passed}/${tests.length}`);
+        }
+
+        runTests();
+
+    </script>
+</body>
+
+</html>
