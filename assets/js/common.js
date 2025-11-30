@@ -54,7 +54,7 @@ function showNotification(message, type = 'info') {
     notification.className = `notification notification-${type}`;
     notification.textContent = message;
     
-    // 计算位置：显示在屏幕中间偏上，多个通知时垂直堆叠
+    // 位置：水平居中，垂直位置在上方
     const topOffset = 20 + (notificationCount * 70); // 从顶部开始，每个通知间距 70px
     
     notification.style.cssText = `
@@ -68,7 +68,7 @@ function showNotification(message, type = 'info') {
         border-radius: var(--border-radius);
         box-shadow: var(--shadow-lg);
         z-index: 10000;
-        animation: slideInCenter 0.3s ease;
+        animation: fadeInScale 0.3s ease;
         max-width: min(400px, calc(100vw - 40px));
         font-size: 0.875rem;
         color: var(--text-primary);
@@ -101,7 +101,7 @@ function showNotification(message, type = 'info') {
     document.body.appendChild(notification);
     
     setTimeout(() => {
-        notification.style.animation = 'slideOutCenter 0.3s ease';
+        notification.style.animation = 'fadeOutScale 0.3s ease';
         setTimeout(() => {
             if (notification.parentNode) {
                 document.body.removeChild(notification);
@@ -115,23 +115,23 @@ if (!document.getElementById('common-animations')) {
     const style = document.createElement('style');
     style.id = 'common-animations';
     style.textContent = `
-        @keyframes slideInCenter {
+        @keyframes fadeInScale {
             from {
-                transform: translateX(-50%) translateY(-20px);
+                transform: translateX(-50%) scale(0.8);
                 opacity: 0;
             }
             to {
-                transform: translateX(-50%) translateY(0);
+                transform: translateX(-50%) scale(1);
                 opacity: 1;
             }
         }
-        @keyframes slideOutCenter {
+        @keyframes fadeOutScale {
             from {
-                transform: translateX(-50%) translateY(0);
+                transform: translateX(-50%) scale(1);
                 opacity: 1;
             }
             to {
-                transform: translateX(-50%) translateY(-20px);
+                transform: translateX(-50%) scale(0.8);
                 opacity: 0;
             }
         }
