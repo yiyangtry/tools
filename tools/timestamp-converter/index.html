@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>时间戳转换工具 - 工具集合</title>
+    <link rel="stylesheet" href="/assets/css/common.css">
+    <style>
+        body {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* 返回首页链接 */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: var(--primary);
+        }
+
+        /* Header */
+        header {
+            padding: var(--spacing-md);
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--bg-primary);
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+            flex-shrink: 0;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+        }
+
+        .title-area {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .icon-box {
+            background-color: var(--primary);
+            color: white;
+            padding: var(--spacing-sm);
+            border-radius: var(--border-radius-sm);
+            display: flex;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            margin: 0;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .controls {
+            display: flex;
+            gap: var(--spacing-sm);
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            padding: var(--spacing-md);
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        /* 输入区域和当前时间的容器 */
+        .input-time-container {
+            display: contents;
+        }
+
+        /* 输入区域 - 卡片式设计 */
+        .input-section {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-xl);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 0;
+        }
+        
+        /* 输入区域和结果区域的容器 */
+        .input-results-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: var(--spacing-lg);
+            max-width: 1400px;
+            margin: 0 auto;
+            align-items: start;
+        }
+
+        .input-container {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: var(--spacing-lg);
+            align-items: center;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+
+        /* 转换箭头 */
+        .convert-arrow {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--spacing-xs);
+            color: var(--text-muted);
+            padding: var(--spacing-md);
+        }
+
+        .convert-arrow-icon {
+            width: 32px;
+            height: 32px;
+            stroke-width: 2;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 0.6;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+
+        .input-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: var(--spacing-md);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        .input-field.error {
+            border-color: var(--error-text);
+            background-color: var(--error-bg);
+        }
+
+        .input-hint {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: var(--spacing-xs);
+        }
+
+        .input-error {
+            font-size: 0.75rem;
+            color: var(--error-text);
+            margin-top: var(--spacing-xs);
+            display: none;
+        }
+
+        .input-error.show {
+            display: block;
+        }
+
+        /* 结果展示区域 */
+        .results-section {
+            grid-column: 1;
+            min-width: 0;
+            padding-top: 0;
+            margin-top: 0;
+            margin-bottom: 0;
+        }
+
+        .results-container {
+            display: block;
+        }
+
+        .results-content {
+            width: 100%;
+        }
+
+        .results-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-top: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            padding-top: var(--spacing-md);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: var(--spacing-md);
+            width: 100%;
+        }
+
+        .result-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-md);
+            transition: all 0.2s;
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .result-card:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-md);
+        }
+
+        .result-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .result-value {
+            font-family: var(--font-mono);
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            word-break: break-all;
+            margin-bottom: var(--spacing-sm);
+            min-height: 1.5em;
+        }
+
+        .result-actions {
+            display: flex;
+            gap: var(--spacing-xs);
+            justify-content: flex-end;
+        }
+
+        .copy-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: var(--border-radius-sm);
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        /* 当前时间面板 - 侧边栏布局 */
+        .current-time-panel {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-md);
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            align-self: start;
+        }
+
+        .current-time-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-md);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            padding-bottom: var(--spacing-sm);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .current-time-grid {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+
+        .current-time-item {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+
+        .current-time-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .current-time-value {
+            font-family: var(--font-mono);
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            word-break: break-all;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .current-time-copy {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.75rem;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: var(--border-radius-sm);
+            transition: all 0.2s;
+            width: 100%;
+            text-align: center;
+        }
+
+        .current-time-copy:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .current-time-divider {
+            display: none;
+        }
+
+        /* 时区选择器 */
+        .timezone-selector {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-sm);
+            background: var(--bg-secondary);
+        }
+
+        .timezone-label {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .timezone-select {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border: none;
+            background: transparent;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            cursor: pointer;
+            outline: none;
+            min-width: 180px;
+        }
+
+        .timezone-select:hover {
+            color: var(--primary);
+        }
+
+        .timezone-select:focus {
+            color: var(--primary);
+        }
+
+        .icon {
+            width: 1em;
+            height: 1em;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        @media (max-width: 768px) {
+            .input-container {
+                grid-template-columns: 1fr;
+            }
+
+            .convert-arrow {
+                transform: rotate(90deg);
+                padding: var(--spacing-sm) 0;
+            }
+
+            .input-section {
+                padding: var(--spacing-md);
+            }
+
+            .results-container {
+                grid-template-columns: 1fr;
+            }
+
+            .results-content {
+                grid-column: 1;
+            }
+
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .input-results-wrapper {
+                grid-template-columns: 1fr;
+            }
+
+            .input-time-container {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .current-time-panel {
+                position: static;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-top">
+            <div>
+                <a href="/" class="back-link">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                    返回工具列表
+                </a>
+                <div class="title-area">
+                    <div class="icon-box">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                    <div>
+                        <h1>时间戳转换工具</h1>
+                        <p class="subtitle">时间戳与日期时间双向转换，支持多种格式</p>
+                    </div>
+                </div>
+            </div>
+            <div class="controls">
+                <div class="timezone-selector">
+                    <label for="timezoneSelect" class="timezone-label">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg>
+                        时区：
+                    </label>
+                    <select id="timezoneSelect" class="timezone-select">
+                        <option value="Asia/Shanghai">上海/北京 (UTC+8)</option>
+                        <option value="Asia/Tokyo">东京 (UTC+9)</option>
+                        <option value="Asia/Hong_Kong">香港 (UTC+8)</option>
+                        <option value="Asia/Singapore">新加坡 (UTC+8)</option>
+                        <option value="Asia/Seoul">首尔 (UTC+9)</option>
+                        <option value="Europe/London">伦敦 (UTC+0)</option>
+                        <option value="Europe/Paris">巴黎 (UTC+1)</option>
+                        <option value="Europe/Berlin">柏林 (UTC+1)</option>
+                        <option value="America/New_York">纽约 (UTC-5)</option>
+                        <option value="America/Chicago">芝加哥 (UTC-6)</option>
+                        <option value="America/Denver">丹佛 (UTC-7)</option>
+                        <option value="America/Los_Angeles">洛杉矶 (UTC-8)</option>
+                        <option value="Australia/Sydney">悉尼 (UTC+10)</option>
+                        <option value="UTC">UTC (UTC+0)</option>
+                    </select>
+                </div>
+                <button class="btn btn-ghost" onclick="useCurrentTime()">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    使用当前时间
+                </button>
+                <button class="btn btn-primary" onclick="clearAll()">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    清空
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- 输入区域、结果区域和当前时间并排显示 -->
+        <div class="input-results-wrapper">
+            <!-- 左侧：输入区域和结果区域 -->
+            <div class="input-time-container">
+                <!-- 输入区域 - 卡片式设计 -->
+                <div class="input-section">
+                    <div class="input-container">
+                        <div class="input-group">
+                            <label class="input-label">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                时间戳
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="text" id="timestampInput" class="input-field" placeholder="输入时间戳（10位或13位数字）" autocomplete="off">
+                                <div class="input-error" id="timestampError"></div>
+                            </div>
+                            <div class="input-hint">支持秒级（10位）或毫秒级（13位）时间戳</div>
+                        </div>
+
+                        <div class="convert-arrow">
+                            <svg class="convert-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
+                            <svg class="convert-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform: scaleX(-1);">
+                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                                日期时间
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="text" id="datetimeInput" class="input-field" placeholder="输入日期时间，如：2024-01-01 00:00:00" autocomplete="off">
+                                <div class="input-error" id="datetimeError"></div>
+                            </div>
+                            <div class="input-hint">支持格式：YYYY-MM-DD HH:mm:ss、YYYY-MM-DDTHH:mm:ss 等</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 结果展示区域 -->
+                <div class="results-section">
+                    <div class="results-container">
+                        <div class="results-content">
+                            <h2 class="results-title">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                                转换结果
+                            </h2>
+                            <div class="results-grid">
+                                <div class="result-card">
+                                    <div class="result-label">时间戳（秒级）</div>
+                                    <div class="result-value" id="resultTimestampSeconds">-</div>
+                                    <div class="result-actions">
+                                        <button class="copy-btn" onclick="copyResult('timestamp-seconds')">
+                                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                            复制
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="result-card">
+                                    <div class="result-label">时间戳（毫秒级）</div>
+                                    <div class="result-value" id="resultTimestampMillis">-</div>
+                                    <div class="result-actions">
+                                        <button class="copy-btn" onclick="copyResult('timestamp-millis')">
+                                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                            复制
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="result-card">
+                                    <div class="result-label">标准日期时间</div>
+                                    <div class="result-value" id="resultStandard">-</div>
+                                    <div class="result-actions">
+                                        <button class="copy-btn" onclick="copyResult('standard')">
+                                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                            复制
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="result-card">
+                                    <div class="result-label">ISO 8601 格式</div>
+                                    <div class="result-value" id="resultISO">-</div>
+                                    <div class="result-actions">
+                                        <button class="copy-btn" onclick="copyResult('iso')">
+                                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                            复制
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="result-card">
+                                    <div class="result-label">中文格式</div>
+                                    <div class="result-value" id="resultChinese">-</div>
+                                    <div class="result-actions">
+                                        <button class="copy-btn" onclick="copyResult('chinese')">
+                                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                            复制
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="result-card">
+                                    <div class="result-label">星期</div>
+                                    <div class="result-value" id="resultWeekday">-</div>
+                                    <div class="result-actions">
+                                        <button class="copy-btn" onclick="copyResult('weekday')">
+                                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                            复制
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧：当前时间面板 - 侧边栏 -->
+            <div class="current-time-panel">
+                <div class="current-time-title">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    当前时间
+                </div>
+                <div class="current-time-grid">
+                    <div class="current-time-item">
+                        <span class="current-time-label">时间戳（秒级）</span>
+                        <span class="current-time-value" id="currentTimestampSeconds">-</span>
+                        <button class="current-time-copy" onclick="copyCurrentTime('seconds')">复制</button>
+                    </div>
+                    <div class="current-time-item">
+                        <span class="current-time-label">时间戳（毫秒级）</span>
+                        <span class="current-time-value" id="currentTimestampMillis">-</span>
+                        <button class="current-time-copy" onclick="copyCurrentTime('millis')">复制</button>
+                    </div>
+                    <div class="current-time-item">
+                        <span class="current-time-label">日期时间</span>
+                        <span class="current-time-value" id="currentDateTime">-</span>
+                        <button class="current-time-copy" onclick="copyCurrentTime('datetime')">复制</button>
+                    </div>
+                    <div class="current-time-item">
+                        <span class="current-time-label">时区</span>
+                        <span class="current-time-value" id="currentTimezone">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/assets/js/common.js"></script>
+    <script>
+        const timestampInput = document.getElementById('timestampInput');
+        const datetimeInput = document.getElementById('datetimeInput');
+        const timestampError = document.getElementById('timestampError');
+        const datetimeError = document.getElementById('datetimeError');
+
+        // 结果元素
+        const resultTimestampSeconds = document.getElementById('resultTimestampSeconds');
+        const resultTimestampMillis = document.getElementById('resultTimestampMillis');
+        const resultStandard = document.getElementById('resultStandard');
+        const resultISO = document.getElementById('resultISO');
+        const resultChinese = document.getElementById('resultChinese');
+        const resultWeekday = document.getElementById('resultWeekday');
+
+        // 当前时间元素
+        const currentTimestampSeconds = document.getElementById('currentTimestampSeconds');
+        const currentTimestampMillis = document.getElementById('currentTimestampMillis');
+        const currentDateTime = document.getElementById('currentDateTime');
+        const currentTimezone = document.getElementById('currentTimezone');
+
+        // 时区选择器
+        const timezoneSelect = document.getElementById('timezoneSelect');
+
+        // 星期数组
+        const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+
+        // 获取当前选择的时区
+        function getSelectedTimezone() {
+            return timezoneSelect.value;
+        }
+
+        // 将日期转换为指定时区的日期对象（返回该时区的本地时间表示）
+        function convertToTimezone(date, timezone) {
+            // 使用 Intl.DateTimeFormat 来格式化日期到指定时区
+            const formatter = new Intl.DateTimeFormat('en-US', {
+                timeZone: timezone,
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            });
+
+            const parts = formatter.formatToParts(date);
+            const year = parseInt(parts.find(p => p.type === 'year').value);
+            const month = parseInt(parts.find(p => p.type === 'month').value) - 1;
+            const day = parseInt(parts.find(p => p.type === 'day').value);
+            const hour = parseInt(parts.find(p => p.type === 'hour').value);
+            const minute = parseInt(parts.find(p => p.type === 'minute').value);
+            const second = parseInt(parts.find(p => p.type === 'second').value);
+
+            return new Date(year, month, day, hour, minute, second);
+        }
+
+        // 从指定时区的日期时间创建 UTC Date 对象
+        function createDateFromTimezone(year, month, day, hour, minute, second, timezone) {
+            // 创建一个临时日期字符串
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:${String(second).padStart(2, '0')}`;
+            
+            // 使用 Intl API 来获取该时区时间对应的 UTC 时间
+            // 创建一个该时区的日期对象
+            const tempDate = new Date(dateStr);
+            
+            // 获取该时区与 UTC 的偏移量（分钟）
+            const formatter = new Intl.DateTimeFormat('en', {
+                timeZone: timezone,
+                timeZoneName: 'longOffset'
+            });
+            
+            // 更简单的方法：使用 Date 构造函数，然后调整时区偏移
+            // 先创建一个本地时间的 Date 对象
+            const localDate = new Date(year, month, day, hour, minute, second);
+            
+            // 获取 UTC 时间
+            const utcTime = localDate.getTime();
+            
+            // 获取指定时区在该时刻的 UTC 偏移量
+            const tzDate = new Date(utcTime);
+            const tzOffset = getTimezoneOffset(tzDate, timezone);
+            const localOffset = tzDate.getTimezoneOffset();
+            
+            // 计算正确的 UTC 时间
+            const correctUtcTime = utcTime - (tzOffset - localOffset) * 60000;
+            
+            return new Date(correctUtcTime);
+        }
+
+        // 获取指定时区在指定日期的 UTC 偏移量（分钟）
+        function getTimezoneOffset(date, timezone) {
+            // 创建一个该时区的日期字符串
+            const utcDate = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }));
+            const tzDate = new Date(date.toLocaleString('en-US', { timeZone: timezone }));
+            return (tzDate.getTime() - utcDate.getTime()) / 60000;
+        }
+
+        // 更简单的方法：使用 Date 的 toLocaleString 和 fromLocaleString（如果支持）
+        // 如果不支持，使用以下方法
+        function parseDateTimeInTimezone(str, timezone) {
+            if (!str || !str.trim()) return null;
+
+            const trimmed = str.trim();
+            
+            // 解析日期时间
+            let year, month, day, hour, minute, second;
+            
+            // 格式1: YYYY-MM-DD HH:mm:ss
+            let match = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2}):(\d{2})$/);
+            if (match) {
+                year = parseInt(match[1]);
+                month = parseInt(match[2]) - 1;
+                day = parseInt(match[3]);
+                hour = parseInt(match[4]);
+                minute = parseInt(match[5]);
+                second = parseInt(match[6]);
+            } else {
+                // 格式2: YYYY-MM-DDTHH:mm:ss
+                match = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?$/);
+                if (match) {
+                    // ISO 格式，直接使用 Date 解析
+                    return new Date(trimmed);
+                }
+                
+                // 格式3: YYYY/MM/DD HH:mm:ss
+                match = trimmed.match(/^(\d{4})\/(\d{2})\/(\d{2})\s+(\d{2}):(\d{2}):(\d{2})$/);
+                if (match) {
+                    year = parseInt(match[1]);
+                    month = parseInt(match[2]) - 1;
+                    day = parseInt(match[3]);
+                    hour = parseInt(match[4]);
+                    minute = parseInt(match[5]);
+                    second = parseInt(match[6]);
+                } else {
+                    // 格式4: YYYY-MM-DD
+                    match = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+                    if (match) {
+                        year = parseInt(match[1]);
+                        month = parseInt(match[2]) - 1;
+                        day = parseInt(match[3]);
+                        hour = 0;
+                        minute = 0;
+                        second = 0;
+                    } else {
+                        // 格式5: 中文格式
+                        match = trimmed.match(/^(\d{4})年(\d{2})月(\d{2})日\s+(\d{2}):(\d{2}):(\d{2})$/);
+                        if (match) {
+                            year = parseInt(match[1]);
+                            month = parseInt(match[2]) - 1;
+                            day = parseInt(match[3]);
+                            hour = parseInt(match[4]);
+                            minute = parseInt(match[5]);
+                            second = parseInt(match[6]);
+                        } else {
+                            // 尝试使用 Date 构造函数
+                            const date = new Date(trimmed);
+                            if (!isNaN(date.getTime())) {
+                                return date;
+                            }
+                            return null;
+                        }
+                    }
+                }
+            }
+
+            if (year === undefined) return null;
+
+            // 将指定时区的日期时间转换为 UTC Date 对象
+            // 使用更可靠的方法
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:${String(second).padStart(2, '0')}`;
+            
+            // 创建一个临时日期来获取时区偏移
+            const tempDate = new Date(dateStr + 'Z'); // 先假设是 UTC
+            const utcTime = tempDate.getTime();
+            
+            // 获取指定时区在该 UTC 时间对应的本地时间
+            const tzFormatter = new Intl.DateTimeFormat('en-US', {
+                timeZone: timezone,
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            });
+            
+            const tzParts = tzFormatter.formatToParts(tempDate);
+            const tzYear = parseInt(tzParts.find(p => p.type === 'year').value);
+            const tzMonth = parseInt(tzParts.find(p => p.type === 'month').value) - 1;
+            const tzDay = parseInt(tzParts.find(p => p.type === 'day').value);
+            const tzHour = parseInt(tzParts.find(p => p.type === 'hour').value);
+            const tzMinute = parseInt(tzParts.find(p => p.type === 'minute').value);
+            const tzSecond = parseInt(tzParts.find(p => p.type === 'second').value);
+            
+            // 计算时区偏移
+            const tzLocalDate = new Date(tzYear, tzMonth, tzDay, tzHour, tzMinute, tzSecond);
+            const offset = (utcTime - tzLocalDate.getTime()) / 60000;
+            
+            // 根据输入的时区时间，计算对应的 UTC 时间
+            const inputLocalDate = new Date(year, month, day, hour, minute, second);
+            const correctUtcTime = inputLocalDate.getTime() + offset * 60000;
+            
+            return new Date(correctUtcTime);
+        }
+
+        // 格式化日期为中文格式（考虑时区）
+        function formatChineseDate(date, timezone) {
+            const formatter = new Intl.DateTimeFormat('zh-CN', {
+                timeZone: timezone,
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            });
+            
+            const parts = formatter.formatToParts(date);
+            const year = parts.find(p => p.type === 'year').value;
+            const month = parts.find(p => p.type === 'month').value;
+            const day = parts.find(p => p.type === 'day').value;
+            const hour = parts.find(p => p.type === 'hour').value;
+            const minute = parts.find(p => p.type === 'minute').value;
+            const second = parts.find(p => p.type === 'second').value;
+            
+            return `${year}年${month}月${day}日 ${hour}:${minute}:${second}`;
+        }
+
+        // 格式化日期为标准格式（考虑时区）
+        function formatStandardDate(date, timezone) {
+            const formatter = new Intl.DateTimeFormat('en-US', {
+                timeZone: timezone,
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            });
+            
+            const parts = formatter.formatToParts(date);
+            const year = parts.find(p => p.type === 'year').value;
+            const month = parts.find(p => p.type === 'month').value;
+            const day = parts.find(p => p.type === 'day').value;
+            const hour = parts.find(p => p.type === 'hour').value;
+            const minute = parts.find(p => p.type === 'minute').value;
+            const second = parts.find(p => p.type === 'second').value;
+            
+            return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+        }
+
+        // 解析日期时间字符串（考虑时区）
+        // 将指定时区的日期时间转换为 UTC Date 对象
+        function parseDateTime(str, timezone) {
+            if (!str || !str.trim()) return null;
+
+            const trimmed = str.trim();
+            
+            let year, month, day, hour, minute, second;
+            
+            // 格式1: YYYY-MM-DD HH:mm:ss
+            let match = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2}):(\d{2})$/);
+            if (match) {
+                year = parseInt(match[1]);
+                month = parseInt(match[2]) - 1;
+                day = parseInt(match[3]);
+                hour = parseInt(match[4]);
+                minute = parseInt(match[5]);
+                second = parseInt(match[6]);
+            } else {
+                // 格式2: YYYY-MM-DDTHH:mm:ss (ISO 格式，可能包含时区信息)
+                match = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?$/);
+                if (match) {
+                    // ISO 格式，直接使用 Date 解析（它已经包含时区信息）
+                    return new Date(trimmed);
+                }
+                
+                // 格式3: YYYY/MM/DD HH:mm:ss
+                match = trimmed.match(/^(\d{4})\/(\d{2})\/(\d{2})\s+(\d{2}):(\d{2}):(\d{2})$/);
+                if (match) {
+                    year = parseInt(match[1]);
+                    month = parseInt(match[2]) - 1;
+                    day = parseInt(match[3]);
+                    hour = parseInt(match[4]);
+                    minute = parseInt(match[5]);
+                    second = parseInt(match[6]);
+                } else {
+                    // 格式4: YYYY-MM-DD
+                    match = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+                    if (match) {
+                        year = parseInt(match[1]);
+                        month = parseInt(match[2]) - 1;
+                        day = parseInt(match[3]);
+                        hour = 0;
+                        minute = 0;
+                        second = 0;
+                    } else {
+                        // 格式5: 中文格式 YYYY年MM月DD日 HH:mm:ss
+                        match = trimmed.match(/^(\d{4})年(\d{2})月(\d{2})日\s+(\d{2}):(\d{2}):(\d{2})$/);
+                        if (match) {
+                            year = parseInt(match[1]);
+                            month = parseInt(match[2]) - 1;
+                            day = parseInt(match[3]);
+                            hour = parseInt(match[4]);
+                            minute = parseInt(match[5]);
+                            second = parseInt(match[6]);
+                        } else {
+                            // 尝试使用 Date 构造函数直接解析
+                            const date = new Date(trimmed);
+                            if (!isNaN(date.getTime())) {
+                                return date;
+                            }
+                            return null;
+                        }
+                    }
+                }
+            }
+
+            if (year === undefined) return null;
+
+            // 将指定时区的日期时间转换为 UTC Date 对象
+            // 使用 Date 构造函数创建一个该时区的日期字符串
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:${String(second).padStart(2, '0')}`;
+            
+            // 创建一个临时日期来获取时区偏移
+            // 先假设输入的日期时间是 UTC 时间，创建一个 Date 对象
+            const tempUtcDate = new Date(dateStr + 'Z');
+            
+            // 获取该 UTC 时间在指定时区对应的本地时间
+            const tzFormatter = new Intl.DateTimeFormat('en-US', {
+                timeZone: timezone,
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            });
+            
+            const tzParts = tzFormatter.formatToParts(tempUtcDate);
+            const tzYear = parseInt(tzParts.find(p => p.type === 'year').value);
+            const tzMonth = parseInt(tzParts.find(p => p.type === 'month').value) - 1;
+            const tzDay = parseInt(tzParts.find(p => p.type === 'day').value);
+            const tzHour = parseInt(tzParts.find(p => p.type === 'hour').value);
+            const tzMinute = parseInt(tzParts.find(p => p.type === 'minute').value);
+            const tzSecond = parseInt(tzParts.find(p => p.type === 'second').value);
+            
+            // 计算时区偏移（分钟）
+            const tzLocalDate = new Date(tzYear, tzMonth, tzDay, tzHour, tzMinute, tzSecond);
+            const offsetMinutes = (tempUtcDate.getTime() - tzLocalDate.getTime()) / 60000;
+            
+            // 根据输入的时区时间，计算对应的 UTC 时间
+            const inputLocalDate = new Date(year, month, day, hour, minute, second);
+            const correctUtcTime = inputLocalDate.getTime() - offsetMinutes * 60000;
+            
+            return new Date(correctUtcTime);
+        }
+
+        // 从时间戳转换为日期
+        function timestampToDate(timestamp) {
+            const num = parseInt(timestamp);
+            if (isNaN(num)) return null;
+
+            // 判断是秒级还是毫秒级
+            if (timestamp.length === 10) {
+                return new Date(num * 1000);
+            } else if (timestamp.length === 13) {
+                return new Date(num);
+            } else {
+                return null;
+            }
+        }
+
+        // 更新结果展示（考虑时区）
+        function updateResults(date) {
+            const timezone = getSelectedTimezone();
+            
+            if (!date || isNaN(date.getTime())) {
+                resultTimestampSeconds.textContent = '-';
+                resultTimestampMillis.textContent = '-';
+                resultStandard.textContent = '-';
+                resultISO.textContent = '-';
+                resultChinese.textContent = '-';
+                resultWeekday.textContent = '-';
+                return;
+            }
+
+            // 时间戳（秒级）- 时间戳是 UTC，不需要时区转换
+            const seconds = Math.floor(date.getTime() / 1000);
+            resultTimestampSeconds.textContent = seconds.toString();
+
+            // 时间戳（毫秒级）- 时间戳是 UTC，不需要时区转换
+            resultTimestampMillis.textContent = date.getTime().toString();
+
+            // 标准格式（使用时区）
+            resultStandard.textContent = formatStandardDate(date, timezone);
+
+            // ISO 格式（UTC 时间）
+            resultISO.textContent = date.toISOString();
+
+            // 中文格式（使用时区）
+            resultChinese.textContent = formatChineseDate(date, timezone);
+
+            // 星期（使用时区对应的日期）
+            const tzDate = new Date(date.toLocaleString('en-US', { timeZone: timezone }));
+            resultWeekday.textContent = weekdays[tzDate.getDay()];
+        }
+
+        // 从时间戳输入框转换
+        function convertFromTimestamp() {
+            const value = timestampInput.value.trim();
+            timestampError.classList.remove('show');
+            timestampInput.classList.remove('error');
+
+            if (!value) {
+                updateResults(null);
+                datetimeInput.value = '';
+                return;
+            }
+
+            // 验证是否为数字
+            if (!/^\d+$/.test(value)) {
+                timestampError.textContent = '时间戳必须是数字';
+                timestampError.classList.add('show');
+                timestampInput.classList.add('error');
+                updateResults(null);
+                return;
+            }
+
+            // 验证长度
+            if (value.length !== 10 && value.length !== 13) {
+                timestampError.textContent = '时间戳必须是10位（秒级）或13位（毫秒级）';
+                timestampError.classList.add('show');
+                timestampInput.classList.add('error');
+                updateResults(null);
+                return;
+            }
+
+            const date = timestampToDate(value);
+            if (!date || isNaN(date.getTime())) {
+                timestampError.textContent = '无效的时间戳';
+                timestampError.classList.add('show');
+                timestampInput.classList.add('error');
+                updateResults(null);
+                return;
+            }
+
+            // 更新日期时间输入框（使用时区）
+            const timezone = getSelectedTimezone();
+            datetimeInput.value = formatStandardDate(date, timezone);
+            datetimeError.classList.remove('show');
+            datetimeInput.classList.remove('error');
+
+            // 更新结果
+            updateResults(date);
+        }
+
+        // 从日期时间输入框转换
+        function convertFromDateTime() {
+            const value = datetimeInput.value.trim();
+            const timezone = getSelectedTimezone();
+            datetimeError.classList.remove('show');
+            datetimeInput.classList.remove('error');
+
+            if (!value) {
+                updateResults(null);
+                timestampInput.value = '';
+                return;
+            }
+
+            const date = parseDateTime(value, timezone);
+            if (!date || isNaN(date.getTime())) {
+                datetimeError.textContent = '无法解析日期时间格式，请使用：YYYY-MM-DD HH:mm:ss';
+                datetimeError.classList.add('show');
+                datetimeInput.classList.add('error');
+                updateResults(null);
+                return;
+            }
+
+            // 更新时间戳输入框
+            const seconds = Math.floor(date.getTime() / 1000);
+            timestampInput.value = seconds.toString();
+            timestampError.classList.remove('show');
+            timestampInput.classList.remove('error');
+
+            // 更新结果
+            updateResults(date);
+        }
+
+        // 监听输入变化
+        let timestampTimeout;
+        timestampInput.addEventListener('input', () => {
+            clearTimeout(timestampTimeout);
+            timestampTimeout = setTimeout(convertFromTimestamp, 300);
+        });
+
+        let datetimeTimeout;
+        datetimeInput.addEventListener('input', () => {
+            clearTimeout(datetimeTimeout);
+            datetimeTimeout = setTimeout(convertFromDateTime, 300);
+        });
+
+        // 复制结果
+        function copyResult(type) {
+            let text = '';
+            switch (type) {
+                case 'timestamp-seconds':
+                    text = resultTimestampSeconds.textContent;
+                    break;
+                case 'timestamp-millis':
+                    text = resultTimestampMillis.textContent;
+                    break;
+                case 'standard':
+                    text = resultStandard.textContent;
+                    break;
+                case 'iso':
+                    text = resultISO.textContent;
+                    break;
+                case 'chinese':
+                    text = resultChinese.textContent;
+                    break;
+                case 'weekday':
+                    text = resultWeekday.textContent;
+                    break;
+            }
+
+            if (text === '-') {
+                showNotification('没有可复制的内容', 'warning');
+                return;
+            }
+
+            copyToClipboard(text).then(success => {
+                if (success) {
+                    showNotification('已复制到剪贴板', 'success');
+                } else {
+                    showNotification('复制失败', 'error');
+                }
+            });
+        }
+
+        // 更新当前时间（考虑时区）
+        function updateCurrentTime() {
+            const now = new Date();
+            const timezone = getSelectedTimezone();
+            const seconds = Math.floor(now.getTime() / 1000);
+            const millis = now.getTime();
+
+            currentTimestampSeconds.textContent = seconds.toString();
+            currentTimestampMillis.textContent = millis.toString();
+            currentDateTime.textContent = formatStandardDate(now, timezone);
+
+            // 时区信息
+            const formatter = new Intl.DateTimeFormat('en-US', {
+                timeZone: timezone,
+                timeZoneName: 'short'
+            });
+            const parts = formatter.formatToParts(now);
+            const tzName = parts.find(p => p.type === 'timeZoneName')?.value || timezone;
+            
+            // 获取时区偏移
+            const tzDate = new Date(now.toLocaleString('en-US', { timeZone: timezone }));
+            const utcDate = new Date(now.toLocaleString('en-US', { timeZone: 'UTC' }));
+            const offsetMinutes = (tzDate.getTime() - utcDate.getTime()) / 60000;
+            const offsetHours = offsetMinutes / 60;
+            const offsetStr = offsetHours >= 0 
+                ? `UTC+${offsetHours}` 
+                : `UTC${offsetHours}`;
+            
+            currentTimezone.textContent = `${offsetStr} (${tzName})`;
+        }
+
+        // 复制当前时间
+        function copyCurrentTime(type) {
+            let text = '';
+            switch (type) {
+                case 'seconds':
+                    text = currentTimestampSeconds.textContent;
+                    break;
+                case 'millis':
+                    text = currentTimestampMillis.textContent;
+                    break;
+                case 'datetime':
+                    text = currentDateTime.textContent;
+                    break;
+            }
+
+            if (text === '-') {
+                showNotification('没有可复制的内容', 'warning');
+                return;
+            }
+
+            copyToClipboard(text).then(success => {
+                if (success) {
+                    showNotification('已复制到剪贴板', 'success');
+                } else {
+                    showNotification('复制失败', 'error');
+                }
+            });
+        }
+
+        // 使用当前时间（同时填充两个输入框，考虑时区）
+        function useCurrentTime() {
+            const now = new Date();
+            const timezone = getSelectedTimezone();
+            const seconds = Math.floor(now.getTime() / 1000);
+            
+            // 同时填充两个输入框
+            timestampInput.value = seconds.toString();
+            datetimeInput.value = formatStandardDate(now, timezone);
+            
+            // 清除错误状态
+            timestampError.classList.remove('show');
+            datetimeError.classList.remove('show');
+            timestampInput.classList.remove('error');
+            datetimeInput.classList.remove('error');
+            
+            // 更新结果
+            updateResults(now);
+            showNotification('已使用当前时间', 'success');
+        }
+
+        // 清空所有
+        function clearAll() {
+            timestampInput.value = '';
+            datetimeInput.value = '';
+            timestampError.classList.remove('show');
+            datetimeError.classList.remove('show');
+            timestampInput.classList.remove('error');
+            datetimeInput.classList.remove('error');
+            updateResults(null);
+            showNotification('已清空', 'success');
+        }
+
+        // 时区选择器变化时重新转换
+        timezoneSelect.addEventListener('change', () => {
+            // 如果有输入，重新转换
+            if (timestampInput.value.trim()) {
+                convertFromTimestamp();
+            } else if (datetimeInput.value.trim()) {
+                convertFromDateTime();
+            } else {
+                // 即使没有输入，也更新当前时间显示
+                updateCurrentTime();
+            }
+        });
+
+        // 初始化：每秒更新当前时间
+        updateCurrentTime();
+        setInterval(updateCurrentTime, 1000);
+
+        // 初始化：如果 URL 参数中有时间戳，自动填充
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlTimestamp = urlParams.get('timestamp');
+        if (urlTimestamp) {
+            timestampInput.value = urlTimestamp;
+            convertFromTimestamp();
+        }
+    </script>
+</body>
+</html>
+
+
