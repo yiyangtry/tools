@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>字数统计工具 - 工具集合</title>
+    <link rel="stylesheet" href="/assets/css/common.css">
+    <style>
+        body {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* 返回首页链接 */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: var(--primary);
+        }
+
+        /* Header */
+        header {
+            padding: var(--spacing-md);
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--bg-primary);
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+            flex-shrink: 0;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+        }
+
+        .title-area {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .icon-box {
+            background-color: var(--primary);
+            color: white;
+            padding: var(--spacing-sm);
+            border-radius: var(--border-radius-sm);
+            display: flex;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            margin: 0;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .controls {
+            display: flex;
+            gap: var(--spacing-sm);
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            padding: var(--spacing-md);
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-lg);
+        }
+
+        .editor-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-sm);
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .editor-actions {
+            display: flex;
+            gap: var(--spacing-xs);
+            align-items: center;
+        }
+
+        .action-btn-small {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.375rem;
+            padding: 0.375rem 0.75rem;
+            font-size: 0.75rem;
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: var(--border-radius-sm);
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .action-btn-small:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border-color: var(--primary);
+        }
+
+        .action-btn-small .icon {
+            width: 14px;
+            height: 14px;
+        }
+
+        .textarea-wrapper {
+            flex: 1;
+            position: relative;
+            display: flex;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            background-color: var(--bg-primary);
+            min-height: 300px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100%;
+            padding: var(--spacing-md);
+            margin: 0;
+            border: none;
+            background: transparent;
+            font-family: var(--font-family);
+            font-size: 0.875rem;
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+            color: var(--text-primary);
+        }
+
+        textarea::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* 统计结果区域 */
+        .stats-container {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-lg);
+        }
+
+        .stats-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0 0 var(--spacing-md) 0;
+            color: var(--text-primary);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-md);
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+            padding: var(--spacing-md);
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1;
+        }
+
+        .stat-detail {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-top: var(--spacing-xs);
+        }
+
+        .icon {
+            width: 1em;
+            height: 1em;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-top">
+            <div>
+                <a href="/" class="back-link">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                    返回工具列表
+                </a>
+                <div class="title-area">
+                    <div class="icon-box">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    </div>
+                    <div>
+                        <h1>字数统计工具</h1>
+                        <p class="subtitle">统计中文字数、英文字数、标点符号字数</p>
+                    </div>
+                </div>
+            </div>
+            <div class="controls">
+                <button class="btn btn-ghost" onclick="loadDemo()">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg>
+                    加载示例
+                </button>
+                <button class="btn btn-primary" onclick="clearInput()">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    清空
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- 输入区域 -->
+        <div class="editor-container">
+            <div class="editor-header">
+                <span>文本输入</span>
+                <div class="editor-actions">
+                    <button class="action-btn-small" onclick="copyInput()" title="复制 (Ctrl+C)">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                        复制
+                    </button>
+                </div>
+            </div>
+            <div class="textarea-wrapper">
+                <textarea id="input" spellcheck="false" placeholder="请输入要统计的文字内容..."></textarea>
+            </div>
+        </div>
+
+        <!-- 统计结果区域 -->
+        <div class="stats-container">
+            <h2 class="stats-title">统计结果</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-label">中文字数</span>
+                    <span class="stat-value" id="chinese-count">0</span>
+                    <span class="stat-detail" id="chinese-detail">中文字符</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">英文字数</span>
+                    <span class="stat-value" id="english-count">0</span>
+                    <span class="stat-detail" id="english-detail">包括字母和数字</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">标点符号</span>
+                    <span class="stat-value" id="punctuation-count">0</span>
+                    <span class="stat-detail" id="punctuation-detail">包括中文和英文标点</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">总字符数</span>
+                    <span class="stat-value" id="total-count">0</span>
+                    <span class="stat-detail" id="total-detail">所有字符总数</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/assets/js/common.js"></script>
+    <script>
+        const input = document.getElementById('input');
+        const chineseCountEl = document.getElementById('chinese-count');
+        const englishCountEl = document.getElementById('english-count');
+        const punctuationCountEl = document.getElementById('punctuation-count');
+        const totalCountEl = document.getElementById('total-count');
+
+        // 统计字数
+        function countWords(text) {
+            if (!text) {
+                return {
+                    chinese: 0,
+                    english: 0,
+                    punctuation: 0,
+                    total: 0
+                };
+            }
+
+            // 中文字符：\u4e00-\u9fff 是基本中文字符（不包括中文标点）
+            const chineseRegex = /[\u4e00-\u9fff]/g;
+            const chineseMatches = text.match(chineseRegex);
+            const chinese = chineseMatches ? chineseMatches.length : 0;
+
+            // 英文字符和数字：a-z, A-Z, 0-9
+            const englishRegex = /[a-zA-Z0-9]/g;
+            const englishMatches = text.match(englishRegex);
+            const english = englishMatches ? englishMatches.length : 0;
+
+            // 标点符号：包括中文标点和英文标点
+            // 中文标点：\u3000-\u303f 是中文标点符号，\uff00-\uffef 是全角标点
+            // 英文标点：常见的英文标点符号
+            const chinesePunctuationRegex = /[\u3000-\u303f\uff00-\uffef]/g;
+            const englishPunctuationRegex = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/g;
+            const chinesePunctuationMatches = text.match(chinesePunctuationRegex);
+            const englishPunctuationMatches = text.match(englishPunctuationRegex);
+            const chinesePunctuation = chinesePunctuationMatches ? chinesePunctuationMatches.length : 0;
+            const englishPunctuation = englishPunctuationMatches ? englishPunctuationMatches.length : 0;
+            const punctuation = chinesePunctuation + englishPunctuation;
+
+            // 总字符数（包括空格、换行等）
+            const total = text.length;
+
+            return {
+                chinese,
+                english,
+                punctuation,
+                total
+            };
+        }
+
+        // 更新统计结果
+        function updateStats() {
+            const text = input.value;
+            const stats = countWords(text);
+            
+            chineseCountEl.textContent = stats.chinese.toLocaleString();
+            englishCountEl.textContent = stats.english.toLocaleString();
+            punctuationCountEl.textContent = stats.punctuation.toLocaleString();
+            totalCountEl.textContent = stats.total.toLocaleString();
+        }
+
+        // 监听输入变化
+        input.addEventListener('input', updateStats);
+        
+        // 初始化
+        updateStats();
+
+        // 清空输入
+        function clearInput() {
+            input.value = '';
+            updateStats();
+            input.focus();
+            showNotification('已清空', 'success');
+        }
+
+        // 复制输入
+        async function copyInput() {
+            const val = input.value.trim();
+            if (!val) {
+                showNotification('没有内容可复制', 'warning');
+                return;
+            }
+            const success = await copyToClipboard(val);
+            if (success) {
+                showNotification('已复制到剪贴板', 'success');
+            } else {
+                showNotification('复制失败', 'error');
+            }
+        }
+
+        // 加载示例
+        function loadDemo() {
+            const demo = `这是一个字数统计工具的示例文本。
+
+This is an example text for word counting tool.
+
+你可以在这里输入任何文字内容，工具会自动统计：
+- 中文字数（中文字符，如：你好世界）
+- 英文字数（包括字母和数字，如：Hello World 123）
+- 标点符号（包括中文和英文标点，如：，。！？!@#$%等）
+
+The tool will automatically count:
+- Chinese characters (Chinese characters only)
+- English characters (including letters and numbers)
+- Punctuation marks (both Chinese and English punctuation marks)
+
+试试看吧！Try it now! 🎉`;
+            input.value = demo;
+            updateStats();
+            input.focus();
+            showNotification('已加载示例文本', 'success');
+        }
+
+        // 键盘快捷键
+        document.addEventListener('keydown', (e) => {
+            // Ctrl/Cmd + C: 复制
+            if ((e.ctrlKey || e.metaKey) && e.key === 'c' && document.activeElement === input) {
+                // 允许默认复制行为
+            }
+        });
+    </script>
+</body>
+</html>
+
