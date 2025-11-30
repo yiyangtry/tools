@@ -305,14 +305,30 @@
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg>
                     加载示例
                 </button>
-                <button class="btn btn-primary" onclick="formatJson()">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                    格式化
-                </button>
-                <button class="btn btn-primary" onclick="compressJson()">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-                    压缩
-                </button>
+                
+                <!-- 格式化/压缩组 -->
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="formatJson()">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                        格式化
+                    </button>
+                    <button class="btn btn-primary" onclick="compressJson()">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                        压缩
+                    </button>
+                </div>
+                
+                <!-- 转义/反转义组 -->
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="escapeJson()">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12" y1="16" y2="16"/></svg>
+                        转义
+                    </button>
+                    <button class="btn btn-primary" onclick="unescapeJson()">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12" y1="16" y2="16"/></svg>
+                        反转义
+                    </button>
+                </div>
             </div>
         </div>
     </header>
@@ -425,7 +441,94 @@
         input.addEventListener('input', updateInput);
         updateInput();
 
-        // 格式化 JSON（直接替换输入框内容）
+        // 转义 JSON 字符串（用于嵌入代码）
+        function escapeJson() {
+            const val = input.value.trim();
+            if (!val) {
+                showError('input', '请输入内容');
+                return;
+            }
+
+            try {
+                // 先将内容转义为 JSON 字符串格式
+                const escaped = JSON.stringify(val);
+                input.value = escaped;
+                updateInput();
+                inputContainer.classList.remove('error');
+                inputError.classList.add('hidden');
+                showNotification('已转义', 'success');
+            } catch (e) {
+                showError('input', `转义失败: ${e.message}`);
+            }
+        }
+
+        // 反转义 JSON 字符串（智能处理多种格式）
+        function unescapeJson() {
+            const val = input.value.trim();
+            if (!val) {
+                showError('input', '请输入转义的字符串');
+                return;
+            }
+
+            try {
+                let unescaped = val;
+                
+                // 方法1: 尝试标准 JSON 解析（如果整个字符串被双引号包裹）
+                if (val.startsWith('"') && val.endsWith('"')) {
+                    try {
+                        unescaped = JSON.parse(val);
+                        input.value = unescaped;
+                        updateInput();
+                        inputContainer.classList.remove('error');
+                        inputError.classList.add('hidden');
+                        showNotification('已反转义', 'success');
+                        return;
+                    } catch (e) {
+                        // 如果标准解析失败，继续尝试方法2
+                    }
+                }
+                
+                // 方法2: 手动替换转义的引号（处理 {\"name\":...} 这种格式）
+                // 替换 \" 为 "
+                unescaped = val.replace(/\\"/g, '"');
+                // 替换 \\ 为 \（但要小心，避免过度替换）
+                unescaped = unescaped.replace(/\\\\/g, '\\');
+                
+                // 验证结果是否是有效的 JSON
+                try {
+                    JSON.parse(unescaped);
+                    input.value = unescaped;
+                    updateInput();
+                    inputContainer.classList.remove('error');
+                    inputError.classList.add('hidden');
+                    showNotification('已反转义', 'success');
+                } catch (e2) {
+                    // 如果替换后仍然不是有效 JSON，尝试其他转义字符
+                    unescaped = unescaped
+                        .replace(/\\n/g, '\n')
+                        .replace(/\\r/g, '\r')
+                        .replace(/\\t/g, '\t')
+                        .replace(/\\f/g, '\f')
+                        .replace(/\\b/g, '\b');
+                    
+                    // 再次验证
+                    try {
+                        JSON.parse(unescaped);
+                        input.value = unescaped;
+                        updateInput();
+                        inputContainer.classList.remove('error');
+                        inputError.classList.add('hidden');
+                        showNotification('已反转义', 'success');
+                    } catch (e3) {
+                        throw new Error('无法解析为有效的 JSON。请检查输入格式');
+                    }
+                }
+            } catch (e) {
+                showError('input', `反转义失败: ${e.message}。请确保输入的是有效的转义 JSON 字符串`);
+            }
+        }
+
+        // 格式化 JSON（直接替换输入框内容，自动处理转义字符串）
         function formatJson() {
             const val = input.value.trim();
             if (!val) {
@@ -434,19 +537,58 @@
             }
 
             try {
-                const obj = JSON.parse(val);
-                const formatted = JSON.stringify(obj, null, 2);
-                input.value = formatted;
-                updateInput();
-                inputContainer.classList.remove('error');
-                inputError.classList.add('hidden');
-                showNotification('已格式化', 'success');
+                let jsonStr = val;
+                
+                // 先尝试标准 JSON 解析
+                try {
+                    const obj = JSON.parse(jsonStr);
+                    const formatted = JSON.stringify(obj, null, 2);
+                    input.value = formatted;
+                    updateInput();
+                    inputContainer.classList.remove('error');
+                    inputError.classList.add('hidden');
+                    showNotification('已格式化', 'success');
+                    return;
+                } catch (e1) {
+                    // 如果标准解析失败，尝试反转义
+                    // 方法1: 如果整个字符串被双引号包裹
+                    if (val.startsWith('"') && val.endsWith('"')) {
+                        try {
+                            jsonStr = JSON.parse(val);
+                            const obj = JSON.parse(jsonStr);
+                            const formatted = JSON.stringify(obj, null, 2);
+                            input.value = formatted;
+                            updateInput();
+                            inputContainer.classList.remove('error');
+                            inputError.classList.add('hidden');
+                            showNotification('已反转义并格式化', 'success');
+                            return;
+                        } catch (e2) {
+                            // 继续尝试方法2
+                        }
+                    }
+                    
+                    // 方法2: 手动替换转义的引号
+                    jsonStr = val.replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+                    try {
+                        const obj = JSON.parse(jsonStr);
+                        const formatted = JSON.stringify(obj, null, 2);
+                        input.value = formatted;
+                        updateInput();
+                        inputContainer.classList.remove('error');
+                        inputError.classList.add('hidden');
+                        showNotification('已反转义并格式化', 'success');
+                        return;
+                    } catch (e3) {
+                        throw e1; // 抛出原始错误
+                    }
+                }
             } catch (e) {
-                showError('input', `JSON 解析错误: ${e.message}`);
+                showError('input', `JSON 解析错误: ${e.message}。提示：如果输入的是转义字符串（包含 \\\"），请先点击"反转义"按钮`);
             }
         }
 
-        // 压缩 JSON（直接替换输入框内容）
+        // 压缩 JSON（直接替换输入框内容，自动处理转义字符串）
         function compressJson() {
             const val = input.value.trim();
             if (!val) {
@@ -455,15 +597,53 @@
             }
 
             try {
-                const obj = JSON.parse(val);
-                const compressed = JSON.stringify(obj);
-                input.value = compressed;
-                updateInput();
-                inputContainer.classList.remove('error');
-                inputError.classList.add('hidden');
-                showNotification('已压缩', 'success');
+                let jsonStr = val;
+                
+                // 先尝试标准 JSON 解析
+                try {
+                    const obj = JSON.parse(jsonStr);
+                    const compressed = JSON.stringify(obj);
+                    input.value = compressed;
+                    updateInput();
+                    inputContainer.classList.remove('error');
+                    inputError.classList.add('hidden');
+                    showNotification('已压缩', 'success');
+                    return;
+                } catch (e1) {
+                    // 如果标准解析失败，尝试反转义
+                    if (val.startsWith('"') && val.endsWith('"')) {
+                        try {
+                            jsonStr = JSON.parse(val);
+                            const obj = JSON.parse(jsonStr);
+                            const compressed = JSON.stringify(obj);
+                            input.value = compressed;
+                            updateInput();
+                            inputContainer.classList.remove('error');
+                            inputError.classList.add('hidden');
+                            showNotification('已反转义并压缩', 'success');
+                            return;
+                        } catch (e2) {
+                            // 继续尝试方法2
+                        }
+                    }
+                    
+                    // 方法2: 手动替换转义的引号
+                    jsonStr = val.replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+                    try {
+                        const obj = JSON.parse(jsonStr);
+                        const compressed = JSON.stringify(obj);
+                        input.value = compressed;
+                        updateInput();
+                        inputContainer.classList.remove('error');
+                        inputError.classList.add('hidden');
+                        showNotification('已反转义并压缩', 'success');
+                        return;
+                    } catch (e3) {
+                        throw e1; // 抛出原始错误
+                    }
+                }
             } catch (e) {
-                showError('input', `JSON 解析错误: ${e.message}`);
+                showError('input', `JSON 解析错误: ${e.message}。提示：如果输入的是转义字符串，请先点击"反转义"按钮`);
             }
         }
 
