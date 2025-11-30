@@ -93,7 +93,10 @@
 
         /* 输入区域和当前时间的容器 */
         .input-time-container {
-            display: contents;
+            display: grid;
+            grid-template-rows: auto auto;
+            gap: 0;
+            min-width: 0;
         }
 
         /* 输入区域 - 卡片式设计 */
@@ -111,7 +114,7 @@
         .input-results-wrapper {
             display: grid;
             grid-template-columns: minmax(0, 1fr) 320px;
-            grid-template-rows: auto 1fr;
+            grid-template-rows: auto auto;
             gap: var(--spacing-lg);
             max-width: 1400px;
             margin: 0 auto;
@@ -196,6 +199,8 @@
             padding-top: 0;
             margin-top: 0;
             margin-bottom: 0;
+            width: 100%;
+            overflow: hidden;
         }
 
         .results-container {
@@ -221,10 +226,11 @@
 
         .results-grid {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: var(--spacing-md);
             width: 100%;
             min-width: 0;
+            overflow: hidden;
         }
 
         .result-card {
@@ -235,6 +241,11 @@
             transition: all 0.2s;
             min-width: 0;
             overflow: hidden;
+            width: 100%;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
         .result-card:hover {
@@ -260,6 +271,12 @@
             min-height: 1.5em;
             overflow-wrap: break-word;
             hyphens: auto;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
+            display: flex;
+            align-items: center;
         }
 
         .result-actions {
@@ -507,7 +524,7 @@
             <!-- 左侧：输入区域和结果区域 -->
             <div class="input-time-container">
                 <!-- 输入区域 - 卡片式设计 -->
-                <div class="input-section" style="grid-row: 1;">
+                <div class="input-section">
                     <div class="input-container">
                         <div class="input-group">
                             <label class="input-label">
@@ -526,7 +543,7 @@
                 </div>
 
                 <!-- 结果展示区域 -->
-                <div class="results-section" style="grid-row: 2;">
+                <div class="results-section">
                     <div class="results-container">
                         <div class="results-content">
                             <h2 class="results-title">
@@ -536,7 +553,7 @@
                             <div class="results-grid">
                                 <div class="result-card">
                                     <div class="result-label">时间戳（秒级）</div>
-                                    <div class="result-value" id="resultTimestampSeconds">-</div>
+                                    <div class="result-value" id="resultTimestampSeconds"><span>-</span></div>
                                     <div class="result-actions">
                                         <button class="copy-btn" onclick="copyResult('timestamp-seconds')">
                                             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
@@ -547,7 +564,7 @@
 
                                 <div class="result-card">
                                     <div class="result-label">时间戳（毫秒级）</div>
-                                    <div class="result-value" id="resultTimestampMillis">-</div>
+                                    <div class="result-value" id="resultTimestampMillis"><span>-</span></div>
                                     <div class="result-actions">
                                         <button class="copy-btn" onclick="copyResult('timestamp-millis')">
                                             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
@@ -558,7 +575,7 @@
 
                                 <div class="result-card">
                                     <div class="result-label">标准日期时间</div>
-                                    <div class="result-value" id="resultStandard">-</div>
+                                    <div class="result-value" id="resultStandard"><span>-</span></div>
                                     <div class="result-actions">
                                         <button class="copy-btn" onclick="copyResult('standard')">
                                             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
@@ -569,7 +586,7 @@
 
                                 <div class="result-card">
                                     <div class="result-label">ISO 8601 格式</div>
-                                    <div class="result-value" id="resultISO">-</div>
+                                    <div class="result-value" id="resultISO"><span>-</span></div>
                                     <div class="result-actions">
                                         <button class="copy-btn" onclick="copyResult('iso')">
                                             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
@@ -580,7 +597,7 @@
 
                                 <div class="result-card">
                                     <div class="result-label">中文格式</div>
-                                    <div class="result-value" id="resultChinese">-</div>
+                                    <div class="result-value" id="resultChinese"><span>-</span></div>
                                     <div class="result-actions">
                                         <button class="copy-btn" onclick="copyResult('chinese')">
                                             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
@@ -591,7 +608,7 @@
 
                                 <div class="result-card">
                                     <div class="result-label">星期</div>
-                                    <div class="result-value" id="resultWeekday">-</div>
+                                    <div class="result-value" id="resultWeekday"><span>-</span></div>
                                     <div class="result-actions">
                                         <button class="copy-btn" onclick="copyResult('weekday')">
                                             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
@@ -606,7 +623,7 @@
             </div>
 
             <!-- 右侧：当前时间面板 - 侧边栏 -->
-            <div class="current-time-panel" style="grid-row: 1 / span 2; grid-column: 2;">
+            <div class="current-time-panel">
                 <div class="current-time-title">
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                     当前时间
@@ -1017,34 +1034,34 @@
             const timezone = getSelectedTimezone();
             
             if (!date || isNaN(date.getTime())) {
-                resultTimestampSeconds.textContent = '-';
-                resultTimestampMillis.textContent = '-';
-                resultStandard.textContent = '-';
-                resultISO.textContent = '-';
-                resultChinese.textContent = '-';
-                resultWeekday.textContent = '-';
+                resultTimestampSeconds.querySelector('span').textContent = '-';
+                resultTimestampMillis.querySelector('span').textContent = '-';
+                resultStandard.querySelector('span').textContent = '-';
+                resultISO.querySelector('span').textContent = '-';
+                resultChinese.querySelector('span').textContent = '-';
+                resultWeekday.querySelector('span').textContent = '-';
                 return;
             }
 
             // 时间戳（秒级）- 时间戳是 UTC，不需要时区转换
             const seconds = Math.floor(date.getTime() / 1000);
-            resultTimestampSeconds.textContent = seconds.toString();
+            resultTimestampSeconds.querySelector('span').textContent = seconds.toString();
 
             // 时间戳（毫秒级）- 时间戳是 UTC，不需要时区转换
-            resultTimestampMillis.textContent = date.getTime().toString();
+            resultTimestampMillis.querySelector('span').textContent = date.getTime().toString();
 
             // 标准格式（使用时区）
-            resultStandard.textContent = formatStandardDate(date, timezone);
+            resultStandard.querySelector('span').textContent = formatStandardDate(date, timezone);
 
             // ISO 格式（UTC 时间）
-            resultISO.textContent = date.toISOString();
+            resultISO.querySelector('span').textContent = date.toISOString();
 
             // 中文格式（使用时区）
-            resultChinese.textContent = formatChineseDate(date, timezone);
+            resultChinese.querySelector('span').textContent = formatChineseDate(date, timezone);
 
             // 星期（使用时区对应的日期）
             const tzDate = new Date(date.toLocaleString('en-US', { timeZone: timezone }));
-            resultWeekday.textContent = weekdays[tzDate.getDay()];
+            resultWeekday.querySelector('span').textContent = weekdays[tzDate.getDay()];
         }
 
         // 自动识别输入格式并转换
@@ -1107,22 +1124,22 @@
             let text = '';
             switch (type) {
                 case 'timestamp-seconds':
-                    text = resultTimestampSeconds.textContent;
+                    text = resultTimestampSeconds.querySelector('span').textContent;
                     break;
                 case 'timestamp-millis':
-                    text = resultTimestampMillis.textContent;
+                    text = resultTimestampMillis.querySelector('span').textContent;
                     break;
                 case 'standard':
-                    text = resultStandard.textContent;
+                    text = resultStandard.querySelector('span').textContent;
                     break;
                 case 'iso':
-                    text = resultISO.textContent;
+                    text = resultISO.querySelector('span').textContent;
                     break;
                 case 'chinese':
-                    text = resultChinese.textContent;
+                    text = resultChinese.querySelector('span').textContent;
                     break;
                 case 'weekday':
-                    text = resultWeekday.textContent;
+                    text = resultWeekday.querySelector('span').textContent;
                     break;
             }
 
