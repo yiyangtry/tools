@@ -86,9 +86,13 @@
             flex: 1;
             padding: var(--spacing-md);
             overflow: auto;
+            overflow-x: hidden;
             display: flex;
             flex-direction: column;
             gap: 0;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
         }
 
         /* 输入区域和当前时间的容器 */
@@ -97,6 +101,9 @@
             grid-template-rows: auto auto;
             gap: 0;
             min-width: 0;
+            max-width: 100%;
+            box-sizing: border-box;
+            overflow: hidden;
         }
 
         /* 输入区域 - 卡片式设计 */
@@ -108,6 +115,9 @@
             box-shadow: var(--shadow-sm);
             margin: 0;
             min-width: 0;
+            max-width: 100%;
+            box-sizing: border-box;
+            overflow: hidden;
         }
         
         /* 输入区域和结果区域的容器 */
@@ -117,9 +127,12 @@
             grid-template-rows: auto auto;
             gap: var(--spacing-lg);
             max-width: 1400px;
+            width: 100%;
             margin: 0 auto;
             align-items: start;
             align-content: start;
+            overflow: hidden;
+            box-sizing: border-box;
         }
 
         .input-container {
@@ -127,6 +140,9 @@
             flex-direction: column;
             gap: 0;
             margin: 0;
+            min-width: 0;
+            max-width: 100%;
+            box-sizing: border-box;
         }
 
         .input-group {
@@ -150,6 +166,9 @@
 
         .input-wrapper {
             position: relative;
+            min-width: 0;
+            max-width: 100%;
+            box-sizing: border-box;
         }
 
         .input-field {
@@ -162,6 +181,9 @@
             font-family: var(--font-mono);
             font-size: 0.875rem;
             transition: all 0.2s;
+            min-width: 0;
+            max-width: 100%;
+            box-sizing: border-box;
         }
 
         .input-field:focus {
@@ -196,19 +218,28 @@
         .results-section {
             grid-column: 1;
             min-width: 0;
+            max-width: 100%;
             padding-top: 0;
             margin-top: 0;
             margin-bottom: 0;
             width: 100%;
             overflow: hidden;
+            box-sizing: border-box;
         }
 
         .results-container {
             display: block;
+            min-width: 0;
+            max-width: 100%;
+            box-sizing: border-box;
         }
 
         .results-content {
             width: 100%;
+            min-width: 0;
+            max-width: 100%;
+            box-sizing: border-box;
+            overflow: hidden;
         }
 
         .results-title {
@@ -226,11 +257,13 @@
 
         .results-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: var(--spacing-md);
             width: 100%;
             min-width: 0;
+            max-width: 100%;
             overflow: hidden;
+            box-sizing: border-box;
         }
 
         .result-card {
@@ -240,12 +273,14 @@
             padding: var(--spacing-md);
             transition: all 0.2s;
             min-width: 0;
+            max-width: 100%;
             overflow: hidden;
             width: 100%;
             min-height: 80px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            box-sizing: border-box;
         }
 
         .result-card:hover {
@@ -277,6 +312,9 @@
             flex: 1;
             display: flex;
             align-items: center;
+            min-width: 0;
+            max-width: 100%;
+            box-sizing: border-box;
         }
 
         .result-actions {
@@ -314,6 +352,10 @@
             box-shadow: var(--shadow-sm);
             align-self: start;
             margin: 0;
+            min-width: 0;
+            max-width: 320px;
+            box-sizing: border-box;
+            overflow: hidden;
         }
 
         .current-time-title {
