@@ -109,6 +109,22 @@
             gap: var(--spacing-md);
         }
 
+        /* 双栏布局 */
+        .editor-view {
+            flex: 1;
+            display: flex;
+            gap: var(--spacing-md);
+            min-height: 0;
+        }
+
+        .editor-pane {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            min-height: 0;
+        }
+
         .editor-container {
             flex: 1;
             display: flex;
@@ -230,6 +246,16 @@
             outline: none;
         }
 
+        /* 只读输出区域 */
+        .output-readonly textarea {
+            cursor: text;
+            user-select: text;
+        }
+
+        .output-readonly textarea:focus {
+            outline: none;
+        }
+
 
         .status-valid {
             color: var(--success-text);
@@ -272,7 +298,12 @@
             .hl-bool { color: #fb923c; }
         }
 
-        /* 单栏布局，移除左右分栏 */
+        /* 响应式：移动端改为上下布局 */
+        @media (max-width: 768px) {
+            .editor-view {
+                flex-direction: column;
+            }
+        }
 
         .icon {
             width: 1em;
@@ -306,13 +337,13 @@
                     加载示例
                 </button>
                 
-                <!-- 格式化/压缩组 -->
+                <!-- 显示模式切换 -->
                 <div class="btn-group">
-                    <button class="btn btn-primary" onclick="formatJson()">
+                    <button class="btn btn-primary" id="btn-format-mode" onclick="setOutputMode('format')">
                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                         格式化
                     </button>
-                    <button class="btn btn-primary" onclick="compressJson()">
+                    <button class="btn btn-ghost" id="btn-compress-mode" onclick="setOutputMode('compress')">
                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
                         压缩
                     </button>
@@ -334,41 +365,71 @@
     </header>
 
     <main>
-        <!-- 单栏编辑器 -->
-        <div class="editor-container">
-            <div class="editor-header">
-                <span>JSON 编辑器</span>
-                <div class="editor-actions">
-                    <button class="action-btn-small" onclick="copyInput()" title="复制 (Ctrl+C)">
-                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                        </svg>
-                        复制
-                    </button>
-                    <button class="action-btn-small" onclick="clearInput()" title="清空">
-                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="3 6 5 6 21 6"></polyline>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                        </svg>
-                        清空
-                    </button>
+        <!-- 双栏编辑器 -->
+        <div class="editor-view">
+            <!-- 左侧：原始输入 -->
+            <div class="editor-pane">
+                <div class="editor-header">
+                    <span>原始 JSON</span>
+                    <div class="editor-actions">
+                        <button class="action-btn-small" onclick="clearInput()" title="清空">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                            清空
+                        </button>
+                    </div>
+                </div>
+                <div class="editor-container" id="input-container">
+                    <div class="error-toast hidden" id="input-error"></div>
+                    <div class="textarea-wrapper">
+                        <div class="line-numbers" id="input-lines">1</div>
+                        <div class="code-area">
+                            <pre class="code-overlay" id="input-hl"></pre>
+                            <textarea id="input" spellcheck="false" placeholder='{"name": "示例", "value": 123}'></textarea>
+                        </div>
+                    </div>
+                    <div class="status-bar">
+                        <span id="input-stats">行数: 1 字符: 0</span>
+                        <span id="input-valid" class="status-valid hidden">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                            有效 JSON
+                        </span>
+                    </div>
                 </div>
             </div>
-            <div class="textarea-wrapper" id="input-container">
-                <div class="error-toast hidden" id="input-error"></div>
-                <div class="line-numbers" id="input-lines">1</div>
-                <div class="code-area">
-                    <pre class="code-overlay" id="input-hl"></pre>
-                    <textarea id="input" spellcheck="false" placeholder='{"name": "示例", "value": 123}'></textarea>
+
+            <!-- 右侧：格式化结果 -->
+            <div class="editor-pane">
+                <div class="editor-header">
+                    <span id="output-title">格式化结果</span>
+                    <div class="editor-actions">
+                        <button class="action-btn-small" onclick="copyOutput()" title="复制结果 (Ctrl+C)">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                            复制
+                        </button>
+                    </div>
                 </div>
-            </div>
-            <div class="status-bar">
-                <span id="input-stats">行数: 1 字符: 0</span>
-                <span id="input-valid" class="status-valid hidden">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                    有效 JSON
-                </span>
+                <div class="editor-container output-readonly" id="output-container">
+                    <div class="textarea-wrapper">
+                        <div class="line-numbers" id="output-lines">1</div>
+                        <div class="code-area">
+                            <pre class="code-overlay" id="output-hl"></pre>
+                            <textarea id="output" spellcheck="false" readonly placeholder="格式化结果将显示在这里..."></textarea>
+                        </div>
+                    </div>
+                    <div class="status-bar">
+                        <span id="output-stats">行数: 0 字符: 0</span>
+                        <span id="output-valid" class="status-valid hidden">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                            有效 JSON
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
@@ -382,6 +443,24 @@
         const inputValid = document.getElementById('input-valid');
         const inputError = document.getElementById('input-error');
         const inputContainer = document.getElementById('input-container');
+
+        const output = document.getElementById('output');
+        const outputLines = document.getElementById('output-lines');
+        const outputHl = document.getElementById('output-hl');
+        const outputStats = document.getElementById('output-stats');
+        const outputValid = document.getElementById('output-valid');
+        const outputContainer = document.getElementById('output-container');
+        const outputTitle = document.getElementById('output-title');
+
+        // 输出模式：'format' 或 'compress'
+        let outputMode = 'format';
+
+        // HTML 转义
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
 
         // JSON 语法高亮
         function highlightJson(code) {
@@ -417,6 +496,7 @@
                 inputValid.classList.add('hidden');
                 inputContainer.classList.remove('error');
                 inputError.classList.add('hidden');
+                updateOutput(''); // 清空输出
                 return;
             }
             
@@ -425,9 +505,120 @@
                 inputValid.classList.remove('hidden');
                 inputContainer.classList.remove('error');
                 inputError.classList.add('hidden');
+                // 自动更新输出
+                updateOutputFromInput();
             } catch (e) {
                 inputValid.classList.add('hidden');
+                updateOutput(''); // 清空输出
             }
+        }
+
+        // 更新输出区域
+        function updateOutput(content) {
+            const lineCount = content ? content.split('\n').length : 0;
+            
+            output.value = content;
+            outputLines.innerHTML = Array.from({length: lineCount}, (_, i) => `<div>${i+1}</div>`).join('');
+            outputHl.innerHTML = content ? highlightJson(content) + '<br/>' : '';
+            outputStats.textContent = `行数: ${lineCount} 字符: ${content.length}`;
+            
+            // 验证输出 JSON
+            if (!content.trim()) {
+                outputValid.classList.add('hidden');
+                return;
+            }
+            
+            try {
+                JSON.parse(content);
+                outputValid.classList.remove('hidden');
+            } catch (e) {
+                outputValid.classList.add('hidden');
+            }
+        }
+
+        // 根据输入更新输出（根据当前模式）
+        function updateOutputFromInput() {
+            const val = input.value.trim();
+            if (!val) {
+                updateOutput('');
+                return;
+            }
+
+            try {
+                let jsonStr = val;
+                
+                // 先尝试标准 JSON 解析
+                try {
+                    const obj = JSON.parse(jsonStr);
+                    let result;
+                    if (outputMode === 'format') {
+                        result = JSON.stringify(obj, null, 2);
+                        outputTitle.textContent = '格式化结果';
+                    } else {
+                        result = JSON.stringify(obj);
+                        outputTitle.textContent = '压缩结果';
+                    }
+                    updateOutput(result);
+                    return;
+                } catch (e1) {
+                    // 如果标准解析失败，尝试反转义
+                    if (val.startsWith('"') && val.endsWith('"')) {
+                        try {
+                            jsonStr = JSON.parse(val);
+                            const obj = JSON.parse(jsonStr);
+                            let result;
+                            if (outputMode === 'format') {
+                                result = JSON.stringify(obj, null, 2);
+                                outputTitle.textContent = '格式化结果';
+                            } else {
+                                result = JSON.stringify(obj);
+                                outputTitle.textContent = '压缩结果';
+                            }
+                            updateOutput(result);
+                            return;
+                        } catch (e2) {
+                            // 继续尝试方法2
+                        }
+                    }
+                    
+                    // 方法2: 手动替换转义的引号
+                    jsonStr = val.replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+                    try {
+                        const obj = JSON.parse(jsonStr);
+                        let result;
+                        if (outputMode === 'format') {
+                            result = JSON.stringify(obj, null, 2);
+                            outputTitle.textContent = '格式化结果';
+                        } else {
+                            result = JSON.stringify(obj);
+                            outputTitle.textContent = '压缩结果';
+                        }
+                        updateOutput(result);
+                        return;
+                    } catch (e3) {
+                        updateOutput(''); // 解析失败，清空输出
+                    }
+                }
+            } catch (e) {
+                updateOutput(''); // 解析失败，清空输出
+            }
+        }
+
+        // 设置输出模式
+        function setOutputMode(mode) {
+            outputMode = mode;
+            const btnFormat = document.getElementById('btn-format-mode');
+            const btnCompress = document.getElementById('btn-compress-mode');
+            
+            if (mode === 'format') {
+                btnFormat.className = 'btn btn-primary';
+                btnCompress.className = 'btn btn-ghost';
+            } else {
+                btnFormat.className = 'btn btn-ghost';
+                btnCompress.className = 'btn btn-primary';
+            }
+            
+            updateOutputFromInput();
         }
 
 
@@ -438,10 +629,16 @@
             inputHl.scrollLeft = input.scrollLeft;
         });
 
+        output.addEventListener('scroll', () => {
+            outputLines.scrollTop = output.scrollTop;
+            outputHl.scrollTop = output.scrollTop;
+            outputHl.scrollLeft = output.scrollLeft;
+        });
+
         input.addEventListener('input', updateInput);
         updateInput();
 
-        // 转义 JSON 字符串（用于嵌入代码）
+        // 转义 JSON 字符串（显示在右侧，不修改左侧原始内容）
         function escapeJson() {
             const val = input.value.trim();
             if (!val) {
@@ -450,10 +647,10 @@
             }
 
             try {
-                // 先将内容转义为 JSON 字符串格式
+                // 将内容转义为 JSON 字符串格式，显示在右侧
                 const escaped = JSON.stringify(val);
-                input.value = escaped;
-                updateInput();
+                outputTitle.textContent = '转义结果';
+                updateOutput(escaped);
                 inputContainer.classList.remove('error');
                 inputError.classList.add('hidden');
                 showNotification('已转义', 'success');
@@ -462,7 +659,7 @@
             }
         }
 
-        // 反转义 JSON 字符串（智能处理多种格式）
+        // 反转义 JSON 字符串（显示在右侧，不修改左侧原始内容）
         function unescapeJson() {
             const val = input.value.trim();
             if (!val) {
@@ -477,8 +674,8 @@
                 if (val.startsWith('"') && val.endsWith('"')) {
                     try {
                         unescaped = JSON.parse(val);
-                        input.value = unescaped;
-                        updateInput();
+                        outputTitle.textContent = '反转义结果';
+                        updateOutput(unescaped);
                         inputContainer.classList.remove('error');
                         inputError.classList.add('hidden');
                         showNotification('已反转义', 'success');
@@ -497,11 +694,12 @@
                 // 验证结果是否是有效的 JSON
                 try {
                     JSON.parse(unescaped);
-                    input.value = unescaped;
-                    updateInput();
+                    outputTitle.textContent = '反转义结果';
+                    updateOutput(unescaped);
                     inputContainer.classList.remove('error');
                     inputError.classList.add('hidden');
                     showNotification('已反转义', 'success');
+                    return;
                 } catch (e2) {
                     // 如果替换后仍然不是有效 JSON，尝试其他转义字符
                     unescaped = unescaped
@@ -514,11 +712,12 @@
                     // 再次验证
                     try {
                         JSON.parse(unescaped);
-                        input.value = unescaped;
-                        updateInput();
+                        outputTitle.textContent = '反转义结果';
+                        updateOutput(unescaped);
                         inputContainer.classList.remove('error');
                         inputError.classList.add('hidden');
                         showNotification('已反转义', 'success');
+                        return;
                     } catch (e3) {
                         throw new Error('无法解析为有效的 JSON。请检查输入格式');
                     }
@@ -528,124 +727,7 @@
             }
         }
 
-        // 格式化 JSON（直接替换输入框内容，自动处理转义字符串）
-        function formatJson() {
-            const val = input.value.trim();
-            if (!val) {
-                showError('input', '请输入 JSON 数据');
-                return;
-            }
-
-            try {
-                let jsonStr = val;
-                
-                // 先尝试标准 JSON 解析
-                try {
-                    const obj = JSON.parse(jsonStr);
-                    const formatted = JSON.stringify(obj, null, 2);
-                    input.value = formatted;
-                    updateInput();
-                    inputContainer.classList.remove('error');
-                    inputError.classList.add('hidden');
-                    showNotification('已格式化', 'success');
-                    return;
-                } catch (e1) {
-                    // 如果标准解析失败，尝试反转义
-                    // 方法1: 如果整个字符串被双引号包裹
-                    if (val.startsWith('"') && val.endsWith('"')) {
-                        try {
-                            jsonStr = JSON.parse(val);
-                            const obj = JSON.parse(jsonStr);
-                            const formatted = JSON.stringify(obj, null, 2);
-                            input.value = formatted;
-                            updateInput();
-                            inputContainer.classList.remove('error');
-                            inputError.classList.add('hidden');
-                            showNotification('已反转义并格式化', 'success');
-                            return;
-                        } catch (e2) {
-                            // 继续尝试方法2
-                        }
-                    }
-                    
-                    // 方法2: 手动替换转义的引号
-                    jsonStr = val.replace(/\\"/g, '"').replace(/\\\\/g, '\\');
-                    try {
-                        const obj = JSON.parse(jsonStr);
-                        const formatted = JSON.stringify(obj, null, 2);
-                        input.value = formatted;
-                        updateInput();
-                        inputContainer.classList.remove('error');
-                        inputError.classList.add('hidden');
-                        showNotification('已反转义并格式化', 'success');
-                        return;
-                    } catch (e3) {
-                        throw e1; // 抛出原始错误
-                    }
-                }
-            } catch (e) {
-                showError('input', `JSON 解析错误: ${e.message}。提示：如果输入的是转义字符串（包含 \\\"），请先点击"反转义"按钮`);
-            }
-        }
-
-        // 压缩 JSON（直接替换输入框内容，自动处理转义字符串）
-        function compressJson() {
-            const val = input.value.trim();
-            if (!val) {
-                showError('input', '请输入 JSON 数据');
-                return;
-            }
-
-            try {
-                let jsonStr = val;
-                
-                // 先尝试标准 JSON 解析
-                try {
-                    const obj = JSON.parse(jsonStr);
-                    const compressed = JSON.stringify(obj);
-                    input.value = compressed;
-                    updateInput();
-                    inputContainer.classList.remove('error');
-                    inputError.classList.add('hidden');
-                    showNotification('已压缩', 'success');
-                    return;
-                } catch (e1) {
-                    // 如果标准解析失败，尝试反转义
-                    if (val.startsWith('"') && val.endsWith('"')) {
-                        try {
-                            jsonStr = JSON.parse(val);
-                            const obj = JSON.parse(jsonStr);
-                            const compressed = JSON.stringify(obj);
-                            input.value = compressed;
-                            updateInput();
-                            inputContainer.classList.remove('error');
-                            inputError.classList.add('hidden');
-                            showNotification('已反转义并压缩', 'success');
-                            return;
-                        } catch (e2) {
-                            // 继续尝试方法2
-                        }
-                    }
-                    
-                    // 方法2: 手动替换转义的引号
-                    jsonStr = val.replace(/\\"/g, '"').replace(/\\\\/g, '\\');
-                    try {
-                        const obj = JSON.parse(jsonStr);
-                        const compressed = JSON.stringify(obj);
-                        input.value = compressed;
-                        updateInput();
-                        inputContainer.classList.remove('error');
-                        inputError.classList.add('hidden');
-                        showNotification('已反转义并压缩', 'success');
-                        return;
-                    } catch (e3) {
-                        throw e1; // 抛出原始错误
-                    }
-                }
-            } catch (e) {
-                showError('input', `JSON 解析错误: ${e.message}。提示：如果输入的是转义字符串，请先点击"反转义"按钮`);
-            }
-        }
+        // 格式化/压缩功能已改为实时更新，通过 setOutputMode 切换显示模式
 
         // 清空输入
         function clearInput() {
@@ -655,9 +737,9 @@
             inputError.classList.add('hidden');
         }
 
-        // 复制输入
-        async function copyInput() {
-            const val = input.value.trim();
+        // 复制输出结果
+        async function copyOutput() {
+            const val = output.value.trim();
             if (!val) {
                 showNotification('没有内容可复制', 'warning');
                 return;
@@ -703,15 +785,20 @@
 
         // 键盘快捷键
         document.addEventListener('keydown', (e) => {
-            // Ctrl/Cmd + Enter: 格式化
-            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            // Ctrl/Cmd + Enter: 切换为格式化模式
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                formatJson();
+                setOutputMode('format');
             }
-            // Ctrl/Cmd + Shift + Enter: 压缩
+            // Ctrl/Cmd + Shift + Enter: 切换为压缩模式
             if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'Enter') {
                 e.preventDefault();
-                compressJson();
+                setOutputMode('compress');
+            }
+            // Ctrl/Cmd + C: 复制输出（当焦点不在输入框时）
+            if ((e.ctrlKey || e.metaKey) && e.key === 'c' && document.activeElement !== input) {
+                e.preventDefault();
+                copyOutput();
             }
         });
     </script>
