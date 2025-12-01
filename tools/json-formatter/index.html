@@ -271,17 +271,336 @@
             gap: var(--spacing-xs);
         }
 
-        .error-toast {
-            position: absolute;
-            top: 0;
-            left: 3rem;
-            right: 0;
-            background-color: var(--error-bg);
+        /* 输出内容区域 */
+        .output-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .output-content.hidden {
+            display: none;
+        }
+
+        /* 错误面板 - 右侧显示，现代化卡片设计 */
+        .error-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            padding: var(--spacing-lg);
+            overflow-y: auto;
+            animation: slideInRight 0.3s ease-out;
+            background: linear-gradient(135deg, rgba(153, 27, 27, 0.02) 0%, transparent 100%);
+        }
+
+        .error-panel.hidden {
+            display: none;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .error-card {
+            background: var(--bg-primary);
+            border-radius: var(--border-radius);
+            border: 2px solid var(--error-text);
+            box-shadow: 0 4px 20px rgba(153, 27, 27, 0.2), 0 0 0 1px rgba(153, 27, 27, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .error-card:hover {
+            box-shadow: 0 6px 24px rgba(153, 27, 27, 0.25), 0 0 0 1px rgba(153, 27, 27, 0.15);
+        }
+
+        .error-header {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-md);
+            background: linear-gradient(90deg, var(--error-bg) 0%, transparent 100%);
+            border-bottom: 1px solid rgba(153, 27, 27, 0.1);
+        }
+
+        .error-icon-wrapper {
+            flex-shrink: 0;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            background: var(--error-text);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .error-icon-wrapper svg {
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        .error-title-section {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .error-title {
+            font-weight: 700;
+            font-size: 0.875rem;
             color: var(--error-text);
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .error-location-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.125rem 0.5rem;
+            background: var(--error-text);
+            color: white;
+            border-radius: 0.75rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-left: var(--spacing-xs);
+        }
+
+        .error-body {
+            padding: var(--spacing-md);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .error-message {
+            color: var(--text-primary);
+            font-size: 0.8125rem;
+            line-height: 1.6;
+            margin-bottom: var(--spacing-sm);
+            font-family: var(--font-mono);
+            background: var(--bg-secondary);
             padding: var(--spacing-sm);
+            border-radius: var(--border-radius-sm);
+            border-left: 3px solid var(--error-text);
+        }
+
+        .error-suggestion {
+            margin-top: var(--spacing-md);
+            padding-top: var(--spacing-md);
+            border-top: 1px solid rgba(153, 27, 27, 0.2);
+        }
+
+        .error-suggestion-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+            padding: var(--spacing-xs) 0;
+        }
+
+        .error-suggestion-title {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            font-weight: 600;
             font-size: 0.75rem;
-            border-bottom: 1px solid var(--error-text);
-            z-index: 10;
+            color: var(--error-text);
+        }
+
+        .error-suggestion-icon {
+            transition: transform 0.2s;
+            width: 0.875rem;
+            height: 0.875rem;
+        }
+
+        .error-suggestion.expanded .error-suggestion-icon {
+            transform: rotate(180deg);
+        }
+
+        .error-suggestion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            padding-top: var(--spacing-sm);
+        }
+
+        .error-suggestion.expanded .error-suggestion-content {
+            max-height: 200px;
+        }
+
+        .error-suggestion-text {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            padding: var(--spacing-sm);
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius-sm);
+        }
+
+        .error-action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            padding: 0.375rem 0.75rem;
+            margin-top: var(--spacing-sm);
+            background: var(--error-text);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius-sm);
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .error-action-btn:hover {
+            background: #7f1d1d;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(153, 27, 27, 0.3);
+        }
+
+        /* 错误行高亮 - 增强版 */
+        .line-numbers .error-line {
+            background: linear-gradient(90deg, var(--error-bg) 0%, transparent 100%);
+            color: var(--error-text);
+            font-weight: 700;
+            padding-right: var(--spacing-sm);
+            position: relative;
+        }
+
+        .line-numbers .error-line::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--error-text);
+        }
+
+        .code-overlay .error-line {
+            background: linear-gradient(90deg, rgba(153, 27, 27, 0.08) 0%, transparent 100%);
+            display: block;
+            padding: 0 var(--spacing-md);
+            margin: 0 calc(-1 * var(--spacing-md));
+            border-left: 3px solid var(--error-text);
+            position: relative;
+        }
+
+        /* 错误字符标记 - 红色波浪线 */
+        .code-overlay .error-char {
+            position: relative;
+            background: rgba(153, 27, 27, 0.15);
+            border-bottom: 2px wavy var(--error-text);
+            padding: 0 1px;
+        }
+
+        /* 错误位置标记 - 更醒目的标记 */
+        .error-marker {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: var(--error-text);
+            border-radius: 50%;
+            border: 2px solid var(--bg-primary);
+            box-shadow: 0 0 0 2px var(--error-text);
+            pointer-events: none;
+            z-index: 3;
+            animation: errorPulse 1.5s infinite;
+        }
+
+        @keyframes errorPulse {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.7;
+                transform: scale(1.2);
+            }
+        }
+
+        .editor-container.error .textarea-wrapper {
+            border-color: var(--error-text);
+            box-shadow: 0 0 0 2px rgba(153, 27, 27, 0.15), 0 0 0 4px rgba(153, 27, 27, 0.05);
+            animation: errorShake 0.5s ease-out;
+        }
+
+        @keyframes errorShake {
+            0%, 100% {
+                transform: translateX(0);
+            }
+            25% {
+                transform: translateX(-4px);
+            }
+            75% {
+                transform: translateX(4px);
+            }
+        }
+
+        /* 错误悬停提示 */
+        .error-tooltip {
+            position: absolute;
+            background: var(--error-text);
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: var(--border-radius-sm);
+            font-size: 0.75rem;
+            white-space: nowrap;
+            z-index: 1000;
+            pointer-events: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .error-tooltip::before {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 1rem;
+            width: 0;
+            height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 4px solid var(--error-text);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-4px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Syntax Highlighting */
@@ -382,7 +701,6 @@
                     </div>
                 </div>
                 <div class="editor-container" id="input-container">
-                    <div class="error-toast hidden" id="input-error"></div>
                     <div class="textarea-wrapper">
                         <div class="line-numbers" id="input-lines">1</div>
                         <div class="code-area">
@@ -415,6 +733,11 @@
                     </div>
                 </div>
                 <div class="editor-container output-readonly" id="output-container">
+                    <!-- 错误面板（有错误时显示） -->
+                    <div class="error-panel hidden" id="error-panel"></div>
+                    
+                    <!-- 格式化结果（无错误时显示） -->
+                    <div class="output-content" id="output-content">
                     <div class="textarea-wrapper">
                         <div class="line-numbers" id="output-lines">1</div>
                         <div class="code-area">
@@ -428,6 +751,7 @@
                             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
                             有效 JSON
                         </span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -441,8 +765,11 @@
         const inputHl = document.getElementById('input-hl');
         const inputStats = document.getElementById('input-stats');
         const inputValid = document.getElementById('input-valid');
-        const inputError = document.getElementById('input-error');
         const inputContainer = document.getElementById('input-container');
+        
+        // 右侧错误面板和输出内容
+        const errorPanel = document.getElementById('error-panel');
+        const outputContent = document.getElementById('output-content');
 
         const output = document.getElementById('output');
         const outputLines = document.getElementById('output-lines');
@@ -455,11 +782,145 @@
         // 输出模式：'format' 或 'compress'
         let outputMode = 'format';
 
+        // 防抖定时器
+        let validationTimer = null;
+        const VALIDATION_DEBOUNCE = 300; // 300ms 防抖
+
+        // 当前错误信息
+        let currentError = null;
+
         // HTML 转义
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
+        }
+
+        /**
+         * JSON 错误解析器 - 解析 JSON.parse 的错误信息
+         * 提取错误位置、行号、列号和错误类型
+         */
+        function parseJsonError(error, jsonString) {
+            const errorInfo = {
+                message: error.message,
+                line: null,
+                column: null,
+                position: null,
+                type: 'unknown',
+                suggestion: ''
+            };
+
+            // 尝试从错误消息中提取位置信息
+            // 格式: "Unexpected token X in JSON at position Y"
+            const positionMatch = error.message.match(/position\s+(\d+)/i);
+            if (positionMatch) {
+                errorInfo.position = parseInt(positionMatch[1], 10);
+                
+                // 计算行号和列号
+                const textBeforeError = jsonString.substring(0, errorInfo.position);
+                const lines = textBeforeError.split('\n');
+                errorInfo.line = lines.length;
+                errorInfo.column = lines[lines.length - 1].length + 1;
+            }
+
+            // 解析错误类型和提供修复建议
+            const message = error.message.toLowerCase();
+            
+            if (message.includes('unexpected token')) {
+                errorInfo.type = 'unexpected_token';
+                const tokenMatch = error.message.match(/unexpected token\s+([^\s]+)/i);
+                const token = tokenMatch ? tokenMatch[1] : '';
+                
+                if (token.includes('}') || token.includes(']')) {
+                    errorInfo.suggestion = '可能缺少开始符号 { 或 [，或者有多余的结束符号';
+                } else if (token.includes('{') || token.includes('[')) {
+                    errorInfo.suggestion = '可能缺少结束符号 } 或 ]，或者有多余的开始符号';
+                } else if (token.includes(',')) {
+                    errorInfo.suggestion = '多余的逗号，请检查是否在对象或数组的最后一个元素后';
+                } else if (token.includes(':')) {
+                    errorInfo.suggestion = '多余的冒号，请检查对象键值对的格式';
+                } else {
+                    errorInfo.suggestion = '意外的字符，请检查 JSON 语法是否正确';
+                }
+            } else if (message.includes('unexpected end')) {
+                errorInfo.type = 'unexpected_end';
+                errorInfo.suggestion = 'JSON 字符串不完整，可能缺少结束符号 } 或 ]';
+            } else if (message.includes('expected property name')) {
+                errorInfo.type = 'expected_property';
+                errorInfo.suggestion = '对象属性名必须用双引号包裹，例如: "key": value';
+            } else if (message.includes('expected double-quoted property name')) {
+                errorInfo.type = 'expected_quoted_property';
+                errorInfo.suggestion = '属性名必须使用双引号，不能使用单引号或省略引号';
+            } else if (message.includes('bad escaped character')) {
+                errorInfo.type = 'bad_escape';
+                errorInfo.suggestion = '转义字符格式错误，请检查反斜杠的使用';
+            } else if (message.includes('bad control character')) {
+                errorInfo.type = 'bad_control';
+                errorInfo.suggestion = '包含无效的控制字符，请检查字符串内容';
+            } else if (message.includes('unterminated string')) {
+                errorInfo.type = 'unterminated_string';
+                errorInfo.suggestion = '字符串未正确结束，请检查是否缺少结束引号';
+            } else {
+                errorInfo.suggestion = '请检查 JSON 语法，确保所有括号、引号都正确匹配';
+            }
+
+            return errorInfo;
+        }
+
+        /**
+         * 高亮错误行和错误字符
+         */
+        function highlightErrorLine(lineNumber, columnNumber = null) {
+            // 清除之前的高亮
+            const prevErrorLines = document.querySelectorAll('.error-line, .error-char');
+            prevErrorLines.forEach(el => {
+                el.classList.remove('error-line', 'error-char');
+            });
+
+            if (!lineNumber || lineNumber < 1) return;
+
+            const lines = input.value.split('\n');
+            const errorLine = lines[lineNumber - 1];
+            if (!errorLine) return;
+
+            // 高亮行号
+            const lineNumberEls = inputLines.querySelectorAll('div');
+            if (lineNumberEls[lineNumber - 1]) {
+                lineNumberEls[lineNumber - 1].classList.add('error-line');
+            }
+
+            // 重新生成高亮代码
+            let highlighted = highlightJson(input.value);
+            const highlightedLines = highlighted.split('\n');
+            
+            // 为错误行添加高亮类
+            if (highlightedLines[lineNumber - 1] !== undefined) {
+                let errorLineContent = highlightedLines[lineNumber - 1] || '';
+                
+                // 如果有列号，尝试标记错误字符
+                // 注意：由于HTML高亮标签的存在，精确定位字符位置比较复杂
+                // 我们采用简化方案：高亮整行，错误字符会在错误提示中显示
+                // 如果需要更精确的标记，可以在错误位置附近添加视觉提示
+                if (columnNumber && columnNumber > 0 && columnNumber <= errorLine.length) {
+                    const errorChar = errorLine[columnNumber - 1] || '';
+                    // 错误字符信息已通过错误提示显示，这里主要高亮整行
+                    // 如果需要，可以在行尾添加一个错误标记
+                }
+                
+                highlightedLines[lineNumber - 1] = `<span class="error-line">${errorLineContent}</span>`;
+            }
+            
+            inputHl.innerHTML = highlightedLines.join('<br/>') + '<br/>';
+
+            // 滚动到错误行（延迟执行以确保 DOM 已更新）
+            setTimeout(() => {
+                if (lineNumber > 0) {
+                    const lineHeight = 24; // 1.5rem = 24px
+                    const scrollTop = (lineNumber - 1) * lineHeight - 100; // 提前 100px 显示
+                    input.scrollTop = Math.max(0, scrollTop);
+                    inputLines.scrollTop = input.scrollTop;
+                }
+            }, 50);
         }
 
         // JSON 语法高亮
@@ -482,35 +943,193 @@
             });
         }
 
-        // 更新输入区域
-        function updateInput() {
+        /**
+         * 显示详细错误信息 - 右侧显示，现代化UI设计
+         */
+        function showDetailedError(errorInfo) {
+            currentError = errorInfo;
+            
+            let errorHtml = '<div class="error-card">';
+            
+            // 错误头部
+            errorHtml += '<div class="error-header">';
+            errorHtml += '<div class="error-icon-wrapper">';
+            errorHtml += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">';
+            errorHtml += '<circle cx="12" cy="12" r="10"/>';
+            errorHtml += '<line x1="12" y1="8" x2="12" y2="12"/>';
+            errorHtml += '<line x1="12" y1="16" x2="12.01" y2="16"/>';
+            errorHtml += '</svg>';
+            errorHtml += '</div>';
+            
+            errorHtml += '<div class="error-title-section">';
+            errorHtml += '<div class="error-title">';
+            errorHtml += '<span>JSON 语法错误</span>';
+            if (errorInfo.line) {
+                errorHtml += `<span class="error-location-badge">`;
+                errorHtml += `<svg style="width: 0.75rem; height: 0.75rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+                errorHtml += ` 第 ${errorInfo.line} 行`;
+                if (errorInfo.column) {
+                    errorHtml += `:${errorInfo.column}`;
+                }
+                errorHtml += '</span>';
+            }
+            errorHtml += '</div>';
+            errorHtml += '</div>';
+            errorHtml += '</div>';
+            
+            // 错误主体
+            errorHtml += '<div class="error-body">';
+            
+            // 错误消息
+            errorHtml += '<div class="error-message">';
+            errorHtml += escapeHtml(errorInfo.message);
+            errorHtml += '</div>';
+            
+            // 修复建议（可折叠）
+            if (errorInfo.suggestion) {
+                errorHtml += '<div class="error-suggestion expanded" id="error-suggestion">';
+                errorHtml += '<div class="error-suggestion-header" onclick="toggleSuggestion()">';
+                errorHtml += '<div class="error-suggestion-title">';
+                errorHtml += '<svg class="error-suggestion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>';
+                errorHtml += '<span>💡 修复建议</span>';
+                errorHtml += '</div>';
+                errorHtml += '</div>';
+                errorHtml += '<div class="error-suggestion-content">';
+                errorHtml += '<div class="error-suggestion-text">';
+                errorHtml += escapeHtml(errorInfo.suggestion);
+                errorHtml += '</div>';
+                errorHtml += '<button class="error-action-btn" onclick="jumpToError()">';
+                errorHtml += '<svg style="width: 0.875rem; height: 0.875rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>';
+                errorHtml += '跳转到错误位置';
+                errorHtml += '</button>';
+                errorHtml += '</div>';
+                errorHtml += '</div>';
+            }
+            
+            errorHtml += '</div>';
+            errorHtml += '</div>';
+            
+            // 显示在右侧错误面板
+            errorPanel.innerHTML = errorHtml;
+            errorPanel.classList.remove('hidden');
+            outputContent.classList.add('hidden');
+            
+            // 更新右侧标题
+            outputTitle.textContent = '错误详情';
+            
+            // 左侧容器添加错误状态
+            inputContainer.classList.add('error');
+            
+            // 高亮错误行和错误字符
+            highlightErrorLine(errorInfo.line, errorInfo.column);
+        }
+
+        // 切换修复建议展开/折叠
+        function toggleSuggestion() {
+            const suggestionEl = document.getElementById('error-suggestion');
+            if (suggestionEl) {
+                suggestionEl.classList.toggle('expanded');
+            }
+        }
+
+        // 跳转到错误位置
+        function jumpToError() {
+            if (currentError && currentError.line) {
+                highlightErrorLine(currentError.line, currentError.column);
+                input.focus();
+                
+                // 如果错误位置已知，移动光标
+                if (currentError.position !== null) {
+                    input.setSelectionRange(currentError.position, currentError.position + 1);
+                }
+            }
+        }
+
+        /**
+         * 清除错误显示
+         * @param {boolean} restoreTitle - 是否恢复默认标题（格式化/压缩结果）
+         */
+        function clearError(restoreTitle = true) {
+            currentError = null;
+            errorPanel.classList.add('hidden');
+            outputContent.classList.remove('hidden');
+            inputContainer.classList.remove('error');
+            
+            // 恢复右侧标题（如果需要）
+            if (restoreTitle) {
+                if (outputMode === 'format') {
+                    outputTitle.textContent = '格式化结果';
+                } else {
+                    outputTitle.textContent = '压缩结果';
+                }
+            }
+            
+            // 清除错误行高亮
+            const prevErrorLines = document.querySelectorAll('.error-line');
+            prevErrorLines.forEach(el => {
+                el.classList.remove('error-line');
+            });
+        }
+
+        /**
+         * 执行 JSON 验证（带防抖）
+         */
+        function validateJson() {
             const val = input.value;
             const lineCount = val.split('\n').length;
             
+            // 更新行号和统计
             inputLines.innerHTML = Array.from({length: lineCount}, (_, i) => `<div>${i+1}</div>`).join('');
-            inputHl.innerHTML = highlightJson(val) + '<br/>';
             inputStats.textContent = `行数: ${lineCount} 字符: ${val.length}`;
             
             // 验证 JSON
             if (!val.trim()) {
                 inputValid.classList.add('hidden');
-                inputContainer.classList.remove('error');
-                inputError.classList.add('hidden');
+                clearError();
+                // 更新语法高亮（无错误时）
+                inputHl.innerHTML = highlightJson(val) + '<br/>';
                 updateOutput(''); // 清空输出
                 return;
             }
             
             try {
                 JSON.parse(val);
+                // 验证成功
                 inputValid.classList.remove('hidden');
-                inputContainer.classList.remove('error');
-                inputError.classList.add('hidden');
+                clearError();
+                // 更新语法高亮（无错误时）
+                inputHl.innerHTML = highlightJson(val) + '<br/>';
                 // 自动更新输出
                 updateOutputFromInput();
             } catch (e) {
+                // 验证失败
                 inputValid.classList.add('hidden');
+                const errorInfo = parseJsonError(e, val);
+                showDetailedError(errorInfo);
                 updateOutput(''); // 清空输出
             }
+        }
+
+        // 更新输入区域（带防抖）
+        function updateInput() {
+            // 清除之前的定时器
+            if (validationTimer) {
+                clearTimeout(validationTimer);
+            }
+            
+            // 立即更新行号和统计（不需要防抖）
+            const val = input.value;
+            const lineCount = val.split('\n').length;
+            inputLines.innerHTML = Array.from({length: lineCount}, (_, i) => `<div>${i+1}</div>`).join('');
+            inputStats.textContent = `行数: ${lineCount} 字符: ${val.length}`;
+            
+            // 立即更新语法高亮（不需要防抖）
+            inputHl.innerHTML = highlightJson(val) + '<br/>';
+            
+            // 防抖验证 JSON
+            validationTimer = setTimeout(() => {
+                validateJson();
+            }, VALIDATION_DEBOUNCE);
         }
 
         // 更新输出区域
@@ -636,7 +1255,17 @@
         });
 
         input.addEventListener('input', updateInput);
-        updateInput();
+        
+        // 初始化验证
+        validateJson();
+        
+        // 点击错误面板可跳转到错误位置（委托事件处理）
+        errorPanel.addEventListener('click', (e) => {
+            // 如果点击的不是按钮或可折叠标题，则跳转
+            if (!e.target.closest('button') && !e.target.closest('.error-suggestion-header')) {
+                jumpToError();
+            }
+        });
 
         // 转义 JSON 字符串（显示在右侧，不修改左侧原始内容）
         function escapeJson() {
@@ -651,8 +1280,8 @@
                 const escaped = JSON.stringify(val);
                 outputTitle.textContent = '转义结果';
                 updateOutput(escaped);
-                inputContainer.classList.remove('error');
-                inputError.classList.add('hidden');
+                // 清除错误状态，但保留标题（不恢复为默认标题）
+                clearError(false);
                 showNotification('已转义', 'success');
             } catch (e) {
                 showError('input', `转义失败: ${e.message}`);
@@ -676,8 +1305,8 @@
                         unescaped = JSON.parse(val);
                         outputTitle.textContent = '反转义结果';
                         updateOutput(unescaped);
-                        inputContainer.classList.remove('error');
-                        inputError.classList.add('hidden');
+                        // 清除错误状态，但保留标题（不恢复为默认标题）
+                        clearError(false);
                         showNotification('已反转义', 'success');
                         return;
                     } catch (e) {
@@ -696,8 +1325,8 @@
                     JSON.parse(unescaped);
                     outputTitle.textContent = '反转义结果';
                     updateOutput(unescaped);
-                    inputContainer.classList.remove('error');
-                    inputError.classList.add('hidden');
+                    // 清除错误状态，但保留标题（不恢复为默认标题）
+                    clearError(false);
                     showNotification('已反转义', 'success');
                     return;
                 } catch (e2) {
@@ -714,8 +1343,8 @@
                         JSON.parse(unescaped);
                         outputTitle.textContent = '反转义结果';
                         updateOutput(unescaped);
-                        inputContainer.classList.remove('error');
-                        inputError.classList.add('hidden');
+                        // 清除错误状态，但保留标题（不恢复为默认标题）
+                        clearError(false);
                         showNotification('已反转义', 'success');
                         return;
                     } catch (e3) {
@@ -734,7 +1363,7 @@
             input.value = '';
             updateInput();
             inputContainer.classList.remove('error');
-            inputError.classList.add('hidden');
+            clearError(); // 清除错误显示
         }
 
         // 复制输出结果
@@ -752,12 +1381,17 @@
             }
         }
 
-        // 显示错误
+        // 显示错误（兼容旧接口）
         function showError(container, msg) {
             if (container === 'input') {
-                inputContainer.classList.add('error');
-                inputError.textContent = msg;
-                inputError.classList.remove('hidden');
+                const errorInfo = {
+                    message: msg,
+                    line: null,
+                    column: null,
+                    type: 'custom',
+                    suggestion: ''
+                };
+                showDetailedError(errorInfo);
             }
         }
 
@@ -799,6 +1433,12 @@
             if ((e.ctrlKey || e.metaKey) && e.key === 'c' && document.activeElement !== input) {
                 e.preventDefault();
                 copyOutput();
+            }
+            // F2 或 Ctrl/Cmd + G: 跳转到错误位置（如果有错误）
+            if ((e.key === 'F2' || ((e.ctrlKey || e.metaKey) && e.key === 'g')) && currentError && currentError.line) {
+                e.preventDefault();
+                highlightErrorLine(currentError.line);
+                input.focus();
             }
         });
     </script>
