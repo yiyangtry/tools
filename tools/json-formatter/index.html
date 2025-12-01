@@ -505,13 +505,24 @@
             background: var(--error-text);
         }
 
+        /* 错误行高亮 - 使用内联样式，不影响布局 */
         .code-overlay .error-line {
-            background: linear-gradient(90deg, rgba(153, 27, 27, 0.08) 0%, transparent 100%);
-            display: block;
-            padding: 0 var(--spacing-md);
-            margin: 0 calc(-1 * var(--spacing-md));
-            border-left: 3px solid var(--error-text);
+            display: inline;
             position: relative;
+        }
+        
+        /* 使用伪元素添加背景和边框，避免影响布局 */
+        .code-overlay .error-line::before {
+            content: '';
+            position: absolute;
+            left: calc(-1 * var(--spacing-md));
+            right: calc(-1 * var(--spacing-md));
+            top: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, rgba(153, 27, 27, 0.08) 0%, transparent 100%);
+            border-left: 3px solid var(--error-text);
+            pointer-events: none;
+            z-index: -1;
         }
 
         /* 错误字符标记 - 红色波浪线 */
