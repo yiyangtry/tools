@@ -846,7 +846,7 @@
                         <div class="line-numbers" id="output-lines">1</div>
                         <div class="code-area">
                             <pre class="code-overlay" id="output-hl"></pre>
-                            <textarea id="output" spellcheck="false" readonly placeholder="格式化结果将显示在这里..."></textarea>
+                            <textarea id="output" spellcheck="false" placeholder="格式化结果将显示在这里..."></textarea>
                         </div>
                     </div>
                     <div class="status-bar">
@@ -1261,6 +1261,10 @@
             const lineCount = content ? content.split('\n').length : 0;
             
             output.value = content;
+            // 更新保存的值，用于阻止编辑时恢复
+            if (typeof lastOutputValue !== 'undefined') {
+                lastOutputValue = content;
+            }
             outputLines.innerHTML = Array.from({length: lineCount}, (_, i) => `<div>${i+1}</div>`).join('');
             outputHl.innerHTML = content ? highlightJson(content) + '<br/>' : '';
             outputStats.textContent = `行数: ${lineCount} 字符: ${content.length}`;
@@ -1464,6 +1468,63 @@
             outputHl.scrollLeft = output.scrollLeft;
         });
 
+        // 阻止输出区域编辑，但允许光标定位和文本选择
+        let lastOutputValue = '';
+        output.addEventListener('focus', () => {
+            // 保存当前值，用于恢复
+            lastOutputValue = output.value;
+        });
+
+        output.addEventListener('input', (e) => {
+            // 阻止任何输入，恢复原值
+            e.preventDefault();
+            output.value = lastOutputValue;
+            showNotification('输出区域为只读，无法编辑', 'warning');
+        });
+
+        output.addEventListener('keydown', (e) => {
+            // 允许的导航键
+            const allowedKeys = [
+                'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
+                'Home', 'End', 'PageUp', 'PageDown',
+                'Tab', 'Escape'
+            ];
+            
+            // 允许 Ctrl/Cmd + A (全选), C (复制)
+            const isCtrlCmd = e.ctrlKey || e.metaKey;
+            const isAllowedCombo = isCtrlCmd && ['a', 'c'].includes(e.key.toLowerCase());
+            
+            // 允许 Shift + 方向键（文本选择）
+            const isShiftNav = e.shiftKey && allowedKeys.includes(e.key);
+            
+            // 如果是不允许的按键，阻止并提示
+            if (!allowedKeys.includes(e.key) && !isAllowedCombo && !isShiftNav) {
+                // 阻止输入键：单字符（字母、数字、符号）、Enter、Backspace、Delete
+                if (e.key.length === 1 || ['Enter', 'Backspace', 'Delete'].includes(e.key)) {
+                    e.preventDefault();
+                    showNotification('输出区域为只读，无法编辑', 'warning');
+                }
+            }
+        });
+
+        output.addEventListener('paste', (e) => {
+            // 阻止粘贴
+            e.preventDefault();
+            showNotification('输出区域为只读，无法粘贴', 'warning');
+        });
+
+        output.addEventListener('cut', (e) => {
+            // 允许剪切（实际上是复制），但阻止实际删除内容
+            e.preventDefault();
+            // 如果选中了文本，复制到剪贴板
+            const selectedText = output.value.substring(output.selectionStart, output.selectionEnd);
+            if (selectedText) {
+                copyToClipboard(selectedText).then(() => {
+                    showNotification('已复制到剪贴板', 'success');
+                });
+            }
+        });
+
         input.addEventListener('input', updateInput);
         
         // 初始化验证和按钮状态
@@ -1603,6 +1664,12 @@
             }
             // Ctrl/Cmd + C: 复制输出（当焦点不在输入框时）
             if ((e.ctrlKey || e.metaKey) && e.key === 'c' && document.activeElement !== input) {
+                // 如果用户在输出区域选中了文本，使用默认复制行为（复制选中的文本）
+                if (document.activeElement === output && output.selectionStart !== output.selectionEnd) {
+                    // 不拦截，让浏览器使用默认行为
+                    return;
+                }
+                // 如果没有选中文本，复制整个输出内容
                 e.preventDefault();
                 copyOutput();
             }
